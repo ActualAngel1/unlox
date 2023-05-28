@@ -6,7 +6,6 @@ import java.util.Map;
 class Lexer {
     private final String[] source;
     private final List<function> functions = new ArrayList<>();
-    private List<Integer> linesFunc;
     private int current = 0;
     private int index = 0;
 
@@ -41,6 +40,10 @@ class Lexer {
         return source[current].equals("instructions:");
     }
 
+    private function getCurrentFunction() {
+        return functions.get(functions.size()-1);
+    }
+
 
     private List<Integer> decompress(List<Integer> lines) {
         // This function is needed to decompress the line-encoding compression algorithm I used in
@@ -54,9 +57,9 @@ class Lexer {
             }
         }
 
-        this.linesFunc = decompressed;
         return decompressed;
     }
+
 
     private function lexFunction() {
         String name = lexFunctionName();
@@ -100,7 +103,7 @@ class Lexer {
         while (!isAtEnd() && !isAtFunctionEnd()) {
             Instruction instruction = scanInstruction();
 
-            if(instruction.type == OpCode.OP_NO_INSTRUCTION)
+            if(instruction.type != OpCode.OP_NO_INSTRUCTION)
                     list.add(instruction);
 
             current++;
@@ -111,7 +114,7 @@ class Lexer {
 
     private Instruction createInstruction(OpCode code, String lexeme) {
         // TODO: TEND TO THIS
-        return new Instruction(code, index-1, lexeme, linesFunc.get(0));
+        return new Instruction(code, index-1, lexeme, getCurrentFunction().lines.get(0));
     }
 
     private Instruction scanInstruction() {
@@ -159,10 +162,11 @@ class Lexer {
             case "OP_RETURN":
                 return createInstruction(OpCode.OP_RETURN,  "return");
             case "":
-                index --;
+                index--;
                 return createInstruction(OpCode.OP_NO_INSTRUCTION, "");
 
             default:
+                index--;
                 return createInstruction(OpCode.OP_LEXME, source[current]);
         }
 

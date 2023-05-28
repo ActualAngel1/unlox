@@ -31,11 +31,9 @@ public class Main {
     private static void run(String source) {
         Lexer lexer = new Lexer(source);
         for (function func : lexer.getFunctions()) {
-            System.out.println(func.name);
-            for (Integer line : func.lines) {
-                System.out.println(line);
-            }
-
+            System.out.println();
+            System.out.println("function: " + func.name);
+            System.out.println("-----------");
             for (Instruction instruction : func.instructions) {
                 System.out.println(instruction.toString());
             }
