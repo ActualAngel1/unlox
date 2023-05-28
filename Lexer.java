@@ -1,34 +1,3 @@
-import java.util.HashMap;
-import java.util.Map;
-/*
-public class Lexer {
-    /*
-    private static final Map<String, OpCode> map;
-    OP_LESS,
-    OP_ADD, OP_SUBTRACT, OP_MULTIPLY, OP_DIVIDE,
-    OP_NOT, OP_NEGATE, OP_PRINT, OP_JUMP, OP_JUMP_IF_FALSE, OP_LOOP, OP_CALL, OP_RETURN,
-    static {
-        map = new HashMap<>();
-        map.put("OP_NIL", OpCode.OP_NIL);
-        map.put("OP_TRUE", OpCode.OP_TRUE);
-        map.put("OP_FALSE", OpCode.OP_FALSE);
-        map.put("OP_POP", OpCode.OP_POP);
-        map.put("OP_GET_LOCAL", OpCode.OP_GET_LOCAL);
-        map.put("OP_SET_LOCAL", OpCode.OP_SET_LOCAL);
-        map.put("OP_GET_GLOBAL", OpCode.OP_GET_GLOBAL);
-        map.put("OP_DEFINE_GLOBAL", OpCode.OP_DEFINE_GLOBAL);
-        map.put("OP_SET_GLOBAL", OpCode.OP_SET_GLOBAL);
-        map.put("OP_EQUAL", OpCode.OP_EQUAL);
-        map.put("OP_GREATER", OpCode.OP_GREATER);
-        map.put()
-    }
-
-
-    String[] lines = myString.split(System.getProperty("line.separator"));
-}
-
- */
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +6,7 @@ import java.util.Map;
 class Lexer {
     private final String[] source;
     private final List<function> functions = new ArrayList<>();
+    private List<Integer> linesFunc;
     private int current = 0;
     private int index = 0;
 
@@ -80,6 +50,7 @@ class Lexer {
             }
         }
 
+        this.linesFunc = decompressed;
         return decompressed;
     }
 
@@ -129,41 +100,59 @@ class Lexer {
         return list;
     }
 
+    private Instruction createInstruction(OpCode code, String lexeme) {
+        return new Instruction(code, index-1, lexeme, linesFunc.get(index-1));
+    }
+
     private Instruction scanInstruction() {
         String currentInstruction = source[current];
+        index++;
         switch (currentInstruction) {
+            case "OP_CONSTANT":
+                this.current+=2;
+                return createInstruction(OpCode.OP_CONSTANT, source[current]);
             case "OP_NIL":
+                return createInstruction(OpCode.OP_NIL, "nil");
             case "OP_TRUE":
             case "OP_FALSE":
             case "OP_POP":
+                return createInstruction(OpCode.OP_POP, "");
             case "OP_GET_LOCAL":
             case "OP_SET_LOCAL":
             case "OP_GET_GLOBAL":
             case "OP_DEFINE_GLOBAL":
             case "OP_SET_GLOBAL":
             case "OP_EQUAL":
+                return createInstruction(OpCode.OP_EQUAL, "==");
             case "OP_GREATER":
+                return createInstruction(OpCode.OP_GREATER, ">");
             case "OP_LESS":
+                return createInstruction(OpCode.OP_LESS, "<");
             case "OP_ADD":
+                return createInstruction(OpCode.OP_ADD, "+");
             case "OP_SUBTRACT":
+                return createInstruction(OpCode.OP_SUBTRACT, "-");
             case "OP_MULTIPLY":
+                return createInstruction(OpCode.OP_MULTIPLY, "*");
             case "OP_DIVIDE":
+                return createInstruction(OpCode.OP_DIVIDE, "/");
             case "OP_NOT":
+                return createInstruction(OpCode.OP_NOT, "!");
             case "OP_NEGATE":
+                return createInstruction(OpCode.OP_NEGATE, "-");
             case "OP_PRINT":
+                return createInstruction(OpCode.OP_PRINT, "print");
             case "OP_JUMP":
             case "OP_JUMP_IF_FALSE":
             case "OP_LOOP":
             case "OP_CALL":
             case "OP_RETURN":
-                System.out.println("Instruction: " + currentInstruction);
-                index++;
-                return new Instruction(OpCode.OP_NIL, index, "NIL", 0);
+                return new Instruction(OpCode.OP_RETURN, index-1, "return", 0);
 
             default:
-                System.out.println("Unknown instruction or space");
-                return new Instruction(OpCode.OP_NIL, index, "NIL", 0);
+                return createInstruction(OpCode.OP_LEXME, source[current]);
         }
+
     }
     /*
 
