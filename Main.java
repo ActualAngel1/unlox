@@ -30,5 +30,10 @@ public class Main {
     }
     private static void run(String source) {
         Lexer lexer = new Lexer(source);
+        function func = lexer.getFunction();
+        for (Integer line : func.lines) {
+            System.out.println(line);
+        }
+
     }
 }
