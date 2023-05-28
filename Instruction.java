@@ -12,6 +12,6 @@ class Instruction {
     }
 
     public String toString() {
-        return type + " " + literal;
+        return type + " " + literal + " line: " + line + " index: " + index;
     }
 }

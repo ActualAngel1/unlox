@@ -30,10 +30,15 @@ public class Main {
     }
     private static void run(String source) {
         Lexer lexer = new Lexer(source);
-        function func = lexer.getFunction();
-        for (Integer line : func.lines) {
-            System.out.println(line);
-        }
+        for (function func : lexer.getFunctions()) {
+            System.out.println(func.name);
+            for (Integer line : func.lines) {
+                System.out.println(line);
+            }
 
+            for (Instruction instruction : func.instructions) {
+                System.out.println(instruction.toString());
+            }
+        }
     }
 }
