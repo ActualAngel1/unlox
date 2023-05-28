@@ -1,7 +1,6 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Stack;
 
 class Lexer {
     private final String[] source;
@@ -62,6 +61,7 @@ class Lexer {
 
 
     private function lexFunction() {
+
         String name = lexFunctionName();
         current++; // Accounts for the ---------- in the bytecode format
         current++;
@@ -71,7 +71,7 @@ class Lexer {
         current++;
         List<Instruction> instructions = lexInstructions();
 
-        return new function(name, instructions, lines);
+        return new function(name, instructions, lines, new Stack<>(), new ArrayList<>());
     }
 
     private String lexFunctionName() {
@@ -127,14 +127,21 @@ class Lexer {
             case "OP_NIL":
                 return createInstruction(OpCode.OP_NIL, "nil");
             case "OP_TRUE":
+                return createInstruction(OpCode.OP_TRUE,  "true");
             case "OP_FALSE":
+                return createInstruction(OpCode.OP_FALSE,  "false");
             case "OP_POP":
                 return createInstruction(OpCode.OP_POP, "");
             case "OP_GET_LOCAL":
+                return createInstruction(OpCode.OP_GET_LOCAL, "");
             case "OP_SET_LOCAL":
+                return createInstruction(OpCode.OP_EQUAL, "=");
             case "OP_GET_GLOBAL":
+                return createInstruction(OpCode.OP_GET_GLOBAL, source[current]);
             case "OP_DEFINE_GLOBAL":
+                return createInstruction(OpCode.OP_DEFINE_GLOBAL,"=");
             case "OP_SET_GLOBAL":
+                return createInstruction(OpCode.OP_EQUAL, "=");
             case "OP_EQUAL":
                 return createInstruction(OpCode.OP_EQUAL, "==");
             case "OP_GREATER":
@@ -156,9 +163,13 @@ class Lexer {
             case "OP_PRINT":
                 return createInstruction(OpCode.OP_PRINT, "print");
             case "OP_JUMP":
+                return createInstruction(OpCode.OP_JUMP,  "");
             case "OP_JUMP_IF_FALSE":
+                return createInstruction(OpCode.OP_JUMP_IF_FALSE,  "");
             case "OP_LOOP":
+                return createInstruction(OpCode.OP_LOOP,  "");
             case "OP_CALL":
+                return createInstruction(OpCode.OP_CALL,  "");
             case "OP_RETURN":
                 return createInstruction(OpCode.OP_RETURN,  "return");
             case "":
