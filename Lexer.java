@@ -6,7 +6,8 @@ class Lexer {
     private final String[] source;
     private final List<function> functions = new ArrayList<>();
     private int current = 0;
-    private int index = 0;
+    private int offset = 0;
+    private List<Integer> currentLines;
 
     Lexer(String source) {
         this.source = source.split("\n");
@@ -56,6 +57,7 @@ class Lexer {
             }
         }
 
+        this.currentLines = decompressed;
         return decompressed;
     }
 
@@ -71,7 +73,7 @@ class Lexer {
         current++;
         List<Instruction> instructions = lexInstructions();
 
-        return new function(name, instructions, lines, new Stack<>(), new ArrayList<>());
+        return new function(name, instructions, lines, new Stack<>(), new ArrayList<>(), 0);
     }
 
     private String lexFunctionName() {
@@ -114,15 +116,16 @@ class Lexer {
 
     private Instruction createInstruction(OpCode code, String lexeme) {
         // TODO: TEND TO THIS
-        return new Instruction(code, index-1, lexeme, getCurrentFunction().lines.get(0));
+        return new Instruction(code, offset-1, lexeme, currentLines.get(0));
     }
 
     private Instruction scanInstruction() {
         String currentInstruction = source[current];
-        index++;
+        offset++;
         switch (currentInstruction) {
             case "OP_CONSTANT":
                 this.current+=2;
+                offset+=2;
                 return createInstruction(OpCode.OP_CONSTANT, source[current]);
             case "OP_NIL":
                 return createInstruction(OpCode.OP_NIL, "nil");
@@ -173,11 +176,9 @@ class Lexer {
             case "OP_RETURN":
                 return createInstruction(OpCode.OP_RETURN,  "return");
             case "":
-                index--;
                 return createInstruction(OpCode.OP_NO_INSTRUCTION, "");
 
             default:
-                index--;
                 return createInstruction(OpCode.OP_LEXME, source[current]);
         }
 

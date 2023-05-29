@@ -28,6 +28,7 @@ public class Main {
             System.err.println("Illegal character in path");
         }
     }
+
     private static void run(String source) {
         Lexer lexer = new Lexer(source);
         for (function func : lexer.getFunctions()) {
@@ -36,6 +37,21 @@ public class Main {
             System.out.println("-----------");
             for (Instruction instruction : func.instructions) {
                 System.out.println(instruction.toString());
+            }
+
+        }
+        System.out.println("After simplification: \n");
+        for (function func : lexer.getFunctions()) {
+            func.instructions = new Simplifiy(func).SimplifyBytecode();
+            System.out.println();
+            System.out.println("function: " + func.name);
+            System.out.println("-----------");
+            for (Instruction instruction : func.instructions) {
+                System.out.println(instruction.toString());
+            }
+
+            for (Value local : func.locals) {
+                System.out.println("Local: " + local.name + " value: " + local.value);
             }
         }
     }
