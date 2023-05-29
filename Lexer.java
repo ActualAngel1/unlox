@@ -1,6 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 class Lexer {
     private final String[] source;
@@ -8,6 +6,28 @@ class Lexer {
     private int current = 0;
     private int offset = 0;
     private List<Integer> currentLines;
+    private static final Map<OpCode, String> map;
+    static {
+        map = new HashMap<>();
+        map.put(OpCode.OP_NIL, "nil");
+        map.put(OpCode.OP_TRUE,  "true");
+        map.put(OpCode.OP_FALSE,  "false");
+        map.put(OpCode.OP_POP, "");
+        map.put(OpCode.OP_SET_GLOBAL, "=");
+        map.put(OpCode.OP_DEFINE_GLOBAL,"=");
+        map.put(OpCode.OP_EQUAL, "==");
+        map.put(OpCode.OP_GREATER, ">");
+        map.put(OpCode.OP_LESS, "<");
+        map.put(OpCode.OP_ADD, "+");
+        map.put(OpCode.OP_SUBTRACT, "-");
+        map.put(OpCode.OP_MULTIPLY, "*");
+        map.put(OpCode.OP_DIVIDE, "/");
+        map.put(OpCode.OP_NOT, "!");
+        map.put(OpCode.OP_NEGATE, "-");
+        map.put(OpCode.OP_PRINT, "print");
+        map.put(OpCode.OP_CALL,  "");
+        map.put(OpCode.OP_RETURN,  "return");
+    }
 
     Lexer(String source) {
         this.source = source.split("\n");
@@ -20,30 +40,96 @@ class Lexer {
         return functions;
     }
 
-    public function getFunction() {
-        return functions.get(0);
+
+    private function lexFunction() {
+
+        String name = lexFunctionName();
+        List<Integer> lines = lexFunctionLines();
+        lexConstants();
+        List<Instruction> instructions = lexInstructions();
+
+        offset = 0;
+        return new function(name, instructions, lines, new Stack<>(), new ArrayList<>(), 0);
     }
 
-    private boolean isAtEnd() {
-        return (current == source.length-1);
+    private String lexFunctionName() {
+        // Accounts for the "function" part of the function declaration in
+        // the bytecode format, "function" length being 9.
+        String name = source[current].substring(9);
+        current+=3;
+        return name;
     }
 
-    private boolean isAtFunctionEnd() {
-        return (source[current].contains("function"));
+    private List<Integer> lexFunctionLines() {
+        List<Integer> lines = new ArrayList<>();
+        while (!isConstantPart()) {
+            lines.add(Integer.parseInt(source[current]));
+            current++;
+        }
+
+        return decompress(lines);
     }
 
-    private boolean isConstantPart() {
-        return source[current].equals("constants:");
+    private void lexConstants() {
+        do {
+            current++;
+        } while (!isInstructionPart());
     }
 
-    private boolean isInstructionPart() {
-        return source[current].equals("instructions:");
+    private List<Instruction> lexInstructions() {
+        List<Instruction> list = new ArrayList<>();
+
+        while (!isAtEnd() && !isAtFunctionEnd()) {
+            list.add(scanInstruction());
+            current++;
+        }
+
+        return list;
     }
 
-    private function getCurrentFunction() {
-        return functions.get(functions.size()-1);
+    private Instruction createInstruction(OpCode code, String lexeme) {
+        // TODO: TEND TO THIS
+        return new Instruction(code, offset, lexeme, currentLines.get(0));
     }
 
+    private Instruction scanInstruction() {
+        offset++;
+        String currentInstruction = source[current];
+        switch (currentInstruction) {
+
+            case "OP_NIL", "OP_TRUE", "OP_FALSE", "OP_POP", "OP_GET_LOCAL", "OP_SET_LOCAL", "OP_GET_GLOBAL", "OP_DEFINE_GLOBAL", "OP_SET_GLOBAL", "OP_EQUAL", "OP_GREATER", "OP_LESS", "OP_ADD", "OP_SUBTRACT", "OP_MULTIPLY", "OP_DIVIDE", "OP_NOT", "OP_NEGATE", "OP_CALL", "OP_RETURN", "OP_PRINT" -> {
+                OpCode code = OpCode.valueOf(currentInstruction);
+                return createInstruction(code, map.get(code));
+            }
+
+
+            case "OP_CONSTANT" -> {
+                OpCode opCode = OpCode.valueOf(currentInstruction);
+                this.current += 2;
+                offset += 2;
+                return createInstruction(opCode, source[current]);
+            }
+
+
+            case "OP_JUMP", "OP_JUMP_IF_FALSE", "OP_LOOP" -> {
+                OpCode opcode = OpCode.valueOf(currentInstruction);
+                this.current++;
+                offset++;
+                return createInstruction(opcode, source[current]);
+            }
+
+
+            case "" -> {
+                return createInstruction(OpCode.OP_NO_INSTRUCTION, "");
+            }
+
+
+            default -> {
+                return createInstruction(OpCode.OP_LEXME, source[current]);
+            }
+        }
+
+    }
 
     private List<Integer> decompress(List<Integer> lines) {
         // This function is needed to decompress the line-encoding compression algorithm I used in
@@ -61,122 +147,19 @@ class Lexer {
         return decompressed;
     }
 
-
-    private function lexFunction() {
-
-        String name = lexFunctionName();
-        current++; // Accounts for the ---------- in the bytecode format
-        current++;
-        List<Integer> lines = lexFunctionLines();
-        current++;
-        lexConstants();
-        current++;
-        List<Instruction> instructions = lexInstructions();
-
-        return new function(name, instructions, lines, new Stack<>(), new ArrayList<>(), 0);
+    private boolean isAtEnd() {
+        return (current == source.length-1);
     }
 
-    private String lexFunctionName() {
-        // Accounts for the "function" part of the function declaration in
-        // the bytecode format, "function" length being 9.
-        String name = source[current].substring(9);
-        current++;
-        return name;
+    private boolean isAtFunctionEnd() {
+        return (source[current].contains("function"));
     }
 
-    private List<Integer> lexFunctionLines() {
-        List<Integer> lines = new ArrayList<>();
-        while (!isConstantPart()) {
-            lines.add(Integer.parseInt(source[current]));
-            current++;
-        }
-
-        return decompress(lines);
+    private boolean isConstantPart() {
+        return source[current].equals("constants:");
     }
 
-    private void lexConstants() {
-        while(!isInstructionPart())
-            current++;
-    }
-
-    private List<Instruction> lexInstructions() {
-        List<Instruction> list = new ArrayList<>();
-
-        while (!isAtEnd() && !isAtFunctionEnd()) {
-            list.add(scanInstruction());
-            current++;
-        }
-
-        return list;
-    }
-
-    private Instruction createInstruction(OpCode code, String lexeme) {
-        // TODO: TEND TO THIS
-        return new Instruction(code, offset-1, lexeme, currentLines.get(0));
-    }
-
-    private Instruction scanInstruction() {
-        String currentInstruction = source[current];
-        offset++;
-        switch (currentInstruction) {
-            case "OP_CONSTANT":
-                this.current+=2;
-                offset+=2;
-                return createInstruction(OpCode.OP_CONSTANT, source[current]);
-            case "OP_NIL":
-                return createInstruction(OpCode.OP_NIL, "nil");
-            case "OP_TRUE":
-                return createInstruction(OpCode.OP_TRUE,  "true");
-            case "OP_FALSE":
-                return createInstruction(OpCode.OP_FALSE,  "false");
-            case "OP_POP":
-                return createInstruction(OpCode.OP_POP, "");
-            case "OP_GET_LOCAL":
-                return createInstruction(OpCode.OP_GET_LOCAL, "");
-            case "OP_SET_LOCAL":
-                return createInstruction(OpCode.OP_EQUAL, "=");
-            case "OP_GET_GLOBAL":
-                return createInstruction(OpCode.OP_GET_GLOBAL, source[current]);
-            case "OP_DEFINE_GLOBAL":
-                return createInstruction(OpCode.OP_DEFINE_GLOBAL,"=");
-            case "OP_SET_GLOBAL":
-                return createInstruction(OpCode.OP_EQUAL, "=");
-            case "OP_EQUAL":
-                return createInstruction(OpCode.OP_EQUAL, "==");
-            case "OP_GREATER":
-                return createInstruction(OpCode.OP_GREATER, ">");
-            case "OP_LESS":
-                return createInstruction(OpCode.OP_LESS, "<");
-            case "OP_ADD":
-                return createInstruction(OpCode.OP_ADD, "+");
-            case "OP_SUBTRACT":
-                return createInstruction(OpCode.OP_SUBTRACT, "-");
-            case "OP_MULTIPLY":
-                return createInstruction(OpCode.OP_MULTIPLY, "*");
-            case "OP_DIVIDE":
-                return createInstruction(OpCode.OP_DIVIDE, "/");
-            case "OP_NOT":
-                return createInstruction(OpCode.OP_NOT, "!");
-            case "OP_NEGATE":
-                return createInstruction(OpCode.OP_NEGATE, "-");
-            case "OP_PRINT":
-                return createInstruction(OpCode.OP_PRINT, "print");
-            case "OP_JUMP":
-                return createInstruction(OpCode.OP_JUMP,  "");
-            case "OP_JUMP_IF_FALSE":
-                return createInstruction(OpCode.OP_JUMP_IF_FALSE,  "");
-            case "OP_LOOP":
-                return createInstruction(OpCode.OP_LOOP,  "");
-            case "OP_CALL":
-                return createInstruction(OpCode.OP_CALL,  "");
-            case "OP_RETURN":
-                return createInstruction(OpCode.OP_RETURN,  "return");
-            case "":
-                return createInstruction(OpCode.OP_NO_INSTRUCTION, "");
-
-            default:
-                return createInstruction(OpCode.OP_LEXME, source[current]);
-        }
-
+    private boolean isInstructionPart() {
+        return source[current].equals("instructions:");
     }
 }

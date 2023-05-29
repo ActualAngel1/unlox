@@ -38,7 +38,6 @@ public class Main {
             for (Instruction instruction : func.instructions) {
                 System.out.println(instruction.toString());
             }
-
         }
         System.out.println("After simplification: \n");
         for (function func : lexer.getFunctions()) {
@@ -52,6 +51,10 @@ public class Main {
 
             for (Value local : func.locals) {
                 System.out.println("Local: " + local.name + " value: " + local.value);
+            }
+
+            for (String global : func.globals) {
+                System.out.println("Global: " + global);
             }
         }
     }
