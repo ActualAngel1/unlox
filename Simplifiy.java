@@ -38,7 +38,10 @@ public class Simplifiy {
                     break;
 
                 case OP_POP:
-                    locals.pop();
+
+                    if (locals.size() > func.argCount + 1) {
+                        locals.pop();
+                    }
                     simplified.add(instructions.get(i));
 
                 case OP_DEFINE_GLOBAL:
