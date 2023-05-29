@@ -103,11 +103,7 @@ class Lexer {
         List<Instruction> list = new ArrayList<>();
 
         while (!isAtEnd() && !isAtFunctionEnd()) {
-            Instruction instruction = scanInstruction();
-
-            if(instruction.type != OpCode.OP_NO_INSTRUCTION)
-                    list.add(instruction);
-
+            list.add(scanInstruction());
             current++;
         }
 

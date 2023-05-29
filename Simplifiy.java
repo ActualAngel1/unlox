@@ -45,9 +45,11 @@ public class Simplifiy {
                     break;
                 case OP_SET_GLOBAL:
                     globals.set(Integer.parseInt(instructions.get(i+1).literal), instructions.get(i+2).literal);
+                    simplified.add(instructions.get(i));
                     break;
                 case OP_DEFINE_GLOBAL:
                     globals.add(Integer.parseInt(instructions.get(i+1).literal), instructions.get(i+2).literal);
+                    simplified.add(instructions.get(i));
                     break;
                 case OP_GET_LOCAL:
                     int index = Integer.parseInt(instructions.get(i+1).literal);
