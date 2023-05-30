@@ -7,8 +7,13 @@ public class Simplifiy {
     List<String> globals;
     String name;
 
-    Simplifiy(function func) {
+    // Set of function names
+    Set<String> names;
+
+    Simplifiy(function func, Set<String> names) {
         this.func = func;
+        this.names = names;
+
         this.instructions = func.instructions;
         this.locals = func.locals;
         this.globals = func.globals;
@@ -21,7 +26,12 @@ public class Simplifiy {
             Instruction instruction = instructions.get(i);
             switch (instruction.type) {
                 case OP_CONSTANT:
-                    locals.push("local_" + generateString());
+                    if (isFunction(instruction.literal)) {
+                        locals.push(instruction.literal);
+                    } else {
+                        locals.push("local_" + generateString());
+                    }
+
                     simplified.add(instruction);
                     break;
 
@@ -73,6 +83,10 @@ public class Simplifiy {
         int line = instruction.line;
         int offset = instruction.offset;
         simplified.add(new Instruction(OpCode.OP_LEXME, offset, locals.get(indexOf), line));
+    }
+
+    private boolean isFunction(String str) {
+        return str.charAt(0) ==  '<' || names.contains(str);
     }
 
     private void parseLocal(int indexOf, Instruction instruction, List<Instruction> simplified) {

@@ -1,11 +1,8 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.Set;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -31,7 +28,15 @@ public class Main {
 
     private static void run(String source) {
         Lexer lexer = new Lexer(source);
+        // Maps a function name to source
+        Set<String> names = new HashSet<>();
+
+        // Maps a name to a function
+        // Map<String, function> names = new HashMap<>();
+
         for (function func : lexer.getFunctions()) {
+            names.add(func.name);
+
             System.out.println();
             System.out.println("function: " + func.name + " arity " + func.argCount);
             System.out.println("-----------");
@@ -41,7 +46,7 @@ public class Main {
         }
         System.out.println("After simplification: \n");
         for (function func : lexer.getFunctions()) {
-            func.instructions = new Simplifiy(func).SimplifyBytecode();
+            func.instructions = new Simplifiy(func, names).SimplifyBytecode();
             System.out.println();
             System.out.println("function: " + func.name);
             System.out.println("-----------");
