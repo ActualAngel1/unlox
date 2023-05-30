@@ -1,3 +1,5 @@
+import java.util.Random;
+
 class Instruction {
     final OpCode type;
     final int offset;

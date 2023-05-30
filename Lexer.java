@@ -44,19 +44,21 @@ class Lexer {
     private function lexFunction() {
 
         String name = lexFunctionName();
+        int argCount = Integer.parseInt(source[current]);
+        current+=3;
         List<Integer> lines = lexFunctionLines();
         lexConstants();
         List<Instruction> instructions = lexInstructions();
 
         offset = 0;
-        return new function(name, instructions, lines, new Stack<>(), new ArrayList<>(), 0);
+        return new function(name, instructions, lines, new Stack<>(), new ArrayList<>(), argCount);
     }
 
     private String lexFunctionName() {
         // Accounts for the "function" part of the function declaration in
         // the bytecode format, "function" length being 9.
         String name = source[current].substring(9);
-        current+=3;
+        current++;
         return name;
     }
 
@@ -74,6 +76,7 @@ class Lexer {
         do {
             current++;
         } while (!isInstructionPart());
+        current++;
     }
 
     private List<Instruction> lexInstructions() {

@@ -33,7 +33,7 @@ public class Main {
         Lexer lexer = new Lexer(source);
         for (function func : lexer.getFunctions()) {
             System.out.println();
-            System.out.println("function: " + func.name);
+            System.out.println("function: " + func.name + " arity " + func.argCount);
             System.out.println("-----------");
             for (Instruction instruction : func.instructions) {
                 System.out.println(instruction.toString());
@@ -49,8 +49,8 @@ public class Main {
                 System.out.println(instruction.toString());
             }
 
-            for (Value local : func.locals) {
-                System.out.println("Local: " + local.name + " value: " + local.value);
+            for (String local : func.locals) {
+                System.out.println("Local: " + local);
             }
 
             for (String global : func.globals) {

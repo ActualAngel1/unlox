@@ -3,7 +3,7 @@ import java.util.*;
 public class Simplifiy {
     function func;
     List<Instruction> instructions;
-    Stack<Value> locals;
+    Stack<String> locals;
     List<String> globals;
     String name;
 
@@ -21,7 +21,7 @@ public class Simplifiy {
             Instruction instruction = instructions.get(i);
             switch (instruction.type) {
                 case OP_CONSTANT:
-                    locals.push(new Value("", instruction.literal, false));
+                    locals.push("local_" + generateString());
                     simplified.add(instruction);
                     break;
 
@@ -43,6 +43,7 @@ public class Simplifiy {
                         locals.pop();
                     }
                     simplified.add(instructions.get(i));
+                    break;
 
                 case OP_DEFINE_GLOBAL:
                     globals.add(Integer.parseInt(instructions.get(i+1).literal), instructions.get(i+2).literal);
@@ -52,12 +53,8 @@ public class Simplifiy {
                 case OP_GET_LOCAL:
                     int indexOf = Integer.parseInt(instructions.get(i+1).literal);
 
-                    if (local(indexOf)) {
-                        parseLocal(indexOf, i, simplified);
-                        break;
-                    }
-
-                    parseArgument();
+                    parseLocal(indexOf, instruction, simplified);
+                    i++;
                     break;
 
                 case OP_NO_INSTRUCTION:
@@ -71,23 +68,24 @@ public class Simplifiy {
         return simplified;
     }
 
-    private boolean local(int index) {
-        return !(index > locals.size()-1);
+
+    private void parseArgument(int indexOf, Instruction instruction, List<Instruction> simplified) {
+        int line = instruction.line;
+        int offset = instruction.offset;
+        simplified.add(new Instruction(OpCode.OP_LEXME, offset, locals.get(indexOf), line));
     }
 
-    private void parseArgument() {
-        func.argCount++;
-        locals.push(new Value("arg_" + generateString(), "nil", true ));
-    }
+    private void parseLocal(int indexOf, Instruction instruction, List<Instruction> simplified) {
+        if (Objects.equals(locals.get(indexOf), "")) {
+            String name = "local_" + generateString();
+        } else {
+            name = locals.get(indexOf);
+        }
+        locals.set(indexOf, name);
 
-    private void parseLocal(int indexOf, int i, List<Instruction> simplified) {
-        Value newValue = new Value("local_" + generateString(), locals.get(indexOf).value, true);
-        locals.set(indexOf, newValue);
-
-        int line = instructions.get(i + 1).line;
-        String val = locals.get(indexOf).value;
-        int offset = instructions.get(i + 1).offset;
-        simplified.add(new Instruction(OpCode.OP_LEXME, offset, val, line));
+        int line = instruction.line;
+        int offset = instruction.offset;
+        simplified.add(new Instruction(OpCode.OP_LEXME, offset, name, line));
     }
 
     public String generateString() {
