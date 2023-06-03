@@ -30,37 +30,45 @@ public class Main {
         Lexer lexer = new Lexer(source);
         // Maps a function name to source
         Set<String> names = new HashSet<>();
+        List<function> functions = lexer.getFunctions();
 
-        // Maps a name to a function
-        // Map<String, function> names = new HashMap<>();
-
-        for (function func : lexer.getFunctions()) {
-            names.add(func.name);
-
-            System.out.println();
-            System.out.println("function: " + func.name + " arity " + func.argCount);
-            System.out.println("-----------");
-            for (Instruction instruction : func.instructions) {
-                System.out.println(instruction.toString());
-            }
+        for (function func : functions) {
+            names.add(func.getName());
+            printSimpleFunction(func);
         }
+
         System.out.println("After simplification: \n");
-        for (function func : lexer.getFunctions()) {
-            func.instructions = new Simplifiy(func, names).SimplifyBytecode();
+
+        for (function func : functions) {
+            func = new Simplifiy(func, names).getSimplifiedFunction();
+            printFunction(func);
+        }
+    }
+
+    private static void printSimpleFunction(function func) {
+        System.out.println();
+        System.out.println("function: " + func.getName() + " arity " + func.getArgCount());
+        System.out.println("-----------");
+        for (Instruction instruction : func.getInstructions()) {
+            System.out.println(instruction.toString());
+        }
+    }
+
+    private static void printFunction(function func) {
             System.out.println();
-            System.out.println("function: " + func.name);
+            System.out.println("function: " + func.getName());
             System.out.println("-----------");
-            for (Instruction instruction : func.instructions) {
+
+            for (Instruction instruction : func.getInstructions()) {
                 System.out.println(instruction.toString());
             }
 
-            for (String local : func.locals) {
+            for (String local : func.getLocals()) {
                 System.out.println("Local: " + local);
             }
 
-            for (String global : func.globals) {
+            for (String global : func.getGlobals()) {
                 System.out.println("Global: " + global);
             }
         }
-    }
 }

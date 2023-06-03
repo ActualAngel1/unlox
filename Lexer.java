@@ -151,7 +151,7 @@ class Lexer {
     }
 
     private boolean isAtEnd() {
-        return (current == source.length-1);
+        return (current >= source.length);
     }
 
     private boolean isAtFunctionEnd() {

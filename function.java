@@ -3,12 +3,12 @@ import java.util.Random;
 import java.util.Stack;
 
 public class function {
-    final String name;
-    List<Instruction> instructions;
-    final List<Integer> lines;
-    Stack<String> locals;
-    List<String> globals;
-    int argCount;
+    private final String name;
+    private final List<Integer> lines;
+    private List<Instruction> instructions;
+    private Stack<String> locals;
+    private List<String> globals;
+    private final int argCount;
 
     function(String name, List<Instruction> instructions, List<Integer> lines,
              Stack<String> locals, List<String> globals, int argCount) {
@@ -18,11 +18,68 @@ public class function {
         this.locals = locals;
         this.globals = globals;
         this.argCount = argCount;
-        locals.push(name);
+        addLocal(name);
 
         for (int i = 0; i < argCount; i++) {
-            locals.push("arg_" + generateString());
+            addLocal(generateArgVarName());
         }
+    }
+
+    public void addInstruction(Instruction instruction) {
+        instructions.add(instruction);
+    }
+
+    public void addGlobal(String string) {
+        globals.add(string);
+    }
+
+    public void addLocal(String string) {
+        locals.push(string);
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public int getArgCount() {
+        return argCount;
+    }
+
+    public Stack<String> getLocals() {
+        return locals;
+    }
+
+
+    public void setInstructions(List<Instruction> instructions) {
+        this.instructions = instructions;
+    }
+
+    public void setGlobals(List<String> globals) {
+        this.globals = globals;
+    }
+
+    public void setLocals(Stack<String> locals) {
+        this.locals = locals;
+    }
+
+    public List<Instruction> getInstructions() {
+        return instructions;
+    }
+
+    public List<Integer> getLines() {
+        return lines;
+    }
+
+    public List<String> getGlobals() {
+        return globals;
+    }
+
+    private String generateArgVarName() {
+        return("arg_" + generateString());
+    }
+
+    private String generateLocalVarName() {
+        return("local_" + generateString());
     }
 
     private String generateString() {
