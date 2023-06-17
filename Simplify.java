@@ -1,8 +1,8 @@
 import java.util.*;
 
-public class Simplifiy {
+public class Simplify {
     private final function func;
-    private final List<Instruction> instructions;
+    private List<Instruction> instructions;
     private final Stack<String> locals;
     private final List<String> globals;
     private final String name;
@@ -10,20 +10,22 @@ public class Simplifiy {
     // Set of function names
     private final Set<String> names;
 
-    Simplifiy(function func, Set<String> names) {
+    Simplify(function func, Set<String> names) {
         this.func = func;
         this.names = names;
         this.locals = func.getLocals();
         this.globals = func.getGlobals();
         this.name = func.getName();
-        this.instructions = simplifyBytecode(func.getInstructions());
+        this.instructions = func.getInstructions();
     }
 
     public function getSimplifiedFunction() {
-        return new function(this.name, this.instructions, this.func.getLines(), this.locals, this.globals, this.func.getArgCount());
+        this.instructions = simplifyBytecode();
+        return new function(this.name, this.instructions, this.func.getLines(),
+                this.locals, this.globals, this.func.getArgCount());
     }
 
-    public List<Instruction> simplifyBytecode(List<Instruction> instructions) {
+    public List<Instruction> simplifyBytecode() {
         List<Instruction> simplified = new ArrayList<>();
         int instructionCount = instructions.size();
 
@@ -36,17 +38,19 @@ public class Simplifiy {
                     break;
 
                 case OP_GET_GLOBAL:
+                    // i need to set up this stuff
                     i += 2;
+                    locals.push(instructions.get(i).literal);
                     simplified.add(instructions.get(i));
                     break;
 
                 case OP_SET_GLOBAL:
                     simplifyOpSetGlobal(i, instruction, simplified);
-                    i += 2;
                     break;
 
                 case OP_POP:
-                    simplifyOpPop(instruction, simplified);
+                    locals.pop();
+                    simplified.add(instruction);
                     break;
 
                 case OP_DEFINE_GLOBAL:
@@ -55,6 +59,14 @@ public class Simplifiy {
 
                 case OP_GET_LOCAL:
                     i = simplifyOpGetLocal(i, instruction, simplified);
+                    break;
+
+                case OP_SET_LOCAL:
+                    simplified.add(instruction);
+                    int index = Integer.parseInt(instructions.get(i + 1).literal);
+                    String localVar = locals.get(index);
+                    Instruction var = new Instruction(OpCode.OP_LEXME, instruction.offset, localVar, instruction.line);
+                    simplified.add(i, var);
                     break;
 
                 case OP_NO_INSTRUCTION:
@@ -81,12 +93,16 @@ public class Simplifiy {
     private void simplifyOpSetGlobal(int currentIndex, Instruction instruction, List<Instruction> simplified) {
         int index = Integer.parseInt(instructions.get(currentIndex + 1).literal);
         String value = instructions.get(currentIndex + 2).literal;
-        globals.set(index, value);
+        if (globals.size() <= index){
+            globals.add(value);
+        } else {
+            globals.set(index, value);
+        }
         simplified.add(instruction);
     }
 
     private void simplifyOpPop(Instruction instruction, List<Instruction> simplified) {
-        if (locals.size() > func.getArgCount() + 1) {
+        if (locals.size() - 1 > func.getArgCount() + 1) {
             locals.pop();
         }
         simplified.add(instruction);
@@ -110,17 +126,17 @@ public class Simplifiy {
     }
 
     private void parseLocal(int indexOf, Instruction instruction, List<Instruction> simplified) {
-        String name;
+        String localName;
         if (Objects.equals(locals.get(indexOf), "")) {
-            name = "local_" + generateString();
+            localName = "local_" + generateString();
         } else {
-            name = locals.get(indexOf);
+            localName = locals.get(indexOf);
         }
-        locals.set(indexOf, name);
+        locals.set(indexOf, localName);
 
         int line = instruction.line;
         int offset = instruction.offset;
-        simplified.add(new Instruction(OpCode.OP_LEXME, offset, name, line));
+        simplified.add(new Instruction(OpCode.OP_LEXME, offset, localName, line));
     }
 
     public String generateString() {

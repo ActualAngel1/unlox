@@ -40,7 +40,7 @@ public class Main {
         System.out.println("After simplification: \n");
 
         for (function func : functions) {
-            func = new Simplifiy(func, names).getSimplifiedFunction();
+            func = new Simplify(func, names).getSimplifiedFunction();
             printFunction(func);
         }
     }
