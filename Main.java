@@ -47,6 +47,8 @@ public class Main {
         for (function func : functions) {
             IRtoBB ir = new IRtoBB(func.getInstructions());
             ir.transform();
+            ir.split();
+            ir.link();
             ir.printBlocks();
         }
     }

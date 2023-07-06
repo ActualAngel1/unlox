@@ -38,11 +38,17 @@ public class IRtoBB {
         }
     }
 
+    private boolean isControlFlowAltering(Instruction instruction) {
+        return (instruction.type == OpCode.OP_JUMP ||
+                instruction.type == OpCode.OP_JUMP_IF_FALSE ||
+                instruction.type == OpCode.OP_LOOP);
+    }
+
     private boolean isInstructionControlFlowAltering(Instruction instruction) {
         return (instruction.type == OpCode.OP_JUMP ||
                 instruction.type == OpCode.OP_JUMP_IF_FALSE ||
                 instruction.type == OpCode.OP_LOOP ||
-                instruction.type == OpCode.OP_RETURN);
+                instruction.type == OpCode.OP_RETURN); // The fuck?
     }
 
     private void linkPrevBlock(BasicBlock current, BasicBlock previous) {
@@ -75,9 +81,68 @@ public class IRtoBB {
                 instruction.type == OpCode.OP_LOOP);
     }
 
-    // split()
+    public void split() {
+        for (int i = 0; i < blocks.size(); i++) {
+            BasicBlock block = blocks.get(i);
+            Instruction lastInstruction = block.getJump();
 
-    // link()
+            if (isControlFlowAltering(lastInstruction)) {
+                int offset = Integer.parseInt(lastInstruction.literal);
+                split(offset);
+            }
+         }
+    }
+
+    private void split(int offset) {
+        // Step 1: get block
+        BasicBlock block = offsetToBlock.get(offset);
+        List<Instruction> subBlock = new ArrayList<>();
+        List<Instruction> prevBlock = new ArrayList<>();
+
+        // Step 2: create the new block
+        for (Instruction instruction : block.getInstructions()) {
+            if (instruction.offset >= offset) {
+                subBlock.add(instruction);
+            } else {
+                prevBlock.add(instruction);
+            }
+        }
+
+        if (prevBlock.isEmpty()) return;
+
+        // Step 3: Link and add the new block to the block list
+        BasicBlock newBlock = new BasicBlock(subBlock, block.getJump());
+        block.addChild(newBlock);
+        blocks.add(newBlock);
+
+        // Step 4: Edit the prev block
+        block.setInstructions(prevBlock);
+        int lastInstructionOffset = prevBlock.size() - 1;
+        Instruction jump = prevBlock.get(lastInstructionOffset);
+
+        block.setJump(jump);
+
+        // Step 5: edit the offsetToBlock Thing
+        for (Instruction instruction : subBlock) {
+            offsetToBlock.put(instruction.offset, newBlock);
+        }
+
+        for (Instruction instruction : prevBlock) {
+            offsetToBlock.put(instruction.offset, block);
+        }
+    }
+
+    public void link() {
+        for (BasicBlock block : blocks) {
+            Instruction jump = block.getJump();
+            if (isControlFlowAltering(jump)) {
+                int offset = Integer.parseInt(jump.literal);
+                BasicBlock jumpedTo = offsetToBlock.get(offset);
+
+                block.addChild(jumpedTo);
+            }
+        }
+    }
 
 
 }

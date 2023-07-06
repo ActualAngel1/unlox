@@ -3,9 +3,9 @@ import java.util.List;
 
 public class BasicBlock {
 
-    private final List<Instruction> Block;
+    private List<Instruction> Block;
     private List<BasicBlock> children;
-    private final Instruction jump;
+    private Instruction jump;
 
     BasicBlock(List<Instruction> Block, List<BasicBlock> children, Instruction jump) {
         this.Block = Block;
@@ -19,8 +19,19 @@ public class BasicBlock {
         this.jump = jump;
     }
 
+    public void setInstructions(List<Instruction> instructions) {
+        this.Block = instructions;
+    }
+
+    public List<Instruction> getInstructions() {
+        return this.Block;
+    }
+
     public void addChild(BasicBlock block) {
         this.children.add(block);
+    }
+    public void setJump(Instruction jump) {
+        this.jump = jump;
     }
 
     public Instruction getJump() {
