@@ -43,6 +43,12 @@ public class Main {
             func = new Simplify(func, names).getSimplifiedFunction();
             printFunction(func);
         }
+
+        for (function func : functions) {
+            IRtoBB ir = new IRtoBB(func.getInstructions());
+            ir.transform();
+            ir.printBlocks();
+        }
     }
 
     private static void printSimpleFunction(function func) {
