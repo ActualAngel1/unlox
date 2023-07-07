@@ -2,10 +2,10 @@ import java.util.*;
 
 public class IRtoBB {
     private final List<Instruction> IR;
-    private List<BasicBlock> blocks = new ArrayList<>();
+    private final List<BasicBlock> blocks = new ArrayList<>();
 
     // Maps all instructions to their basic block
-    private Map<Integer, BasicBlock> offsetToBlock = new HashMap<>();
+    private final Map<Integer, BasicBlock> offsetToBlock = new HashMap<>();
 
     IRtoBB(List<Instruction> IR) {
         this.IR = IR;
@@ -25,8 +25,6 @@ public class IRtoBB {
                 if (!blocks.isEmpty()) {
                     BasicBlock prevBlock = blocks.get(blocks.size() - 1);
                     linkPrevBlock(currBlock, prevBlock);
-
-                    // TODO: "split" blocks that are jumped to, link all blocks
                 }
 
                 blocks.add(currBlock);
@@ -71,8 +69,17 @@ public class IRtoBB {
     }
 
     public void printBlocks() {
-        for (BasicBlock block : blocks) {
-            System.out.println(block);
+        System.out.println("\n");
+        for (int i = 0; i < blocks.size(); i++) {
+            System.out.println("id: " + i + " Instructions: " + blocks.get(i));
+            System.out.println("Successors: ");
+            System.out.println();
+
+            for (BasicBlock block : blocks.get(i).getSuccessors()) {
+                System.out.println(blocks.indexOf(block) + ", ");
+            }
+
+            System.out.println();
         }
     }
 
@@ -143,6 +150,5 @@ public class IRtoBB {
             }
         }
     }
-
 
 }

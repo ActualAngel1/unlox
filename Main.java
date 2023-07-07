@@ -28,6 +28,7 @@ public class Main {
 
     private static void run(String source) {
         Lexer lexer = new Lexer(source);
+
         // Maps a function name to source
         Set<String> names = new HashSet<>();
         List<function> functions = lexer.getFunctions();
