@@ -12,7 +12,7 @@ public class IRtoBB {
     }
 
     public void transform() {
-        List<Instruction> block = new ArrayList<>();
+        List<Object> block = new ArrayList<>();
         Stack<Instruction> stack = new Stack<>();
 
         for (Instruction current : IR) {
@@ -62,9 +62,10 @@ public class IRtoBB {
         }
     }
 
-    private void map(List<Instruction> block, BasicBlock blockPointer) {
-        for (Instruction instruction : block) {
-            offsetToBlock.put(instruction.offset, blockPointer);
+    private void map(List<Object> block, BasicBlock blockPointer) {
+        for (Object instruction : block) {
+            Instruction inst = (Instruction) instruction;
+            offsetToBlock.put(inst.offset, blockPointer);
         }
     }
 
@@ -103,15 +104,16 @@ public class IRtoBB {
     private void split(int offset) {
         // Step 1: get block
         BasicBlock block = offsetToBlock.get(offset);
-        List<Instruction> subBlock = new ArrayList<>();
-        List<Instruction> prevBlock = new ArrayList<>();
+        List<Object> subBlock = new ArrayList<>();
+        List<Object> prevBlock = new ArrayList<>();
 
         // Step 2: create the new block
-        for (Instruction instruction : block.getInstructions()) {
-            if (instruction.offset >= offset) {
-                subBlock.add(instruction);
+        for (Object instruction : block.getInstructions()) {
+            Instruction inst = (Instruction) instruction;
+            if (inst.offset >= offset) {
+                subBlock.add(inst);
             } else {
-                prevBlock.add(instruction);
+                prevBlock.add(inst);
             }
         }
 
@@ -125,17 +127,19 @@ public class IRtoBB {
         // Step 4: Edit the prev block
         block.setInstructions(prevBlock);
         int lastInstructionOffset = prevBlock.size() - 1;
-        Instruction jump = prevBlock.get(lastInstructionOffset);
+        Instruction jump = (Instruction) prevBlock.get(lastInstructionOffset);
 
         block.setJump(jump);
 
         // Step 5: edit the offsetToBlock Thing
-        for (Instruction instruction : subBlock) {
-            offsetToBlock.put(instruction.offset, newBlock);
+        for (Object instruction : subBlock) {
+            Instruction inst = (Instruction) instruction;
+            offsetToBlock.put(inst.offset, newBlock);
         }
 
-        for (Instruction instruction : prevBlock) {
-            offsetToBlock.put(instruction.offset, block);
+        for (Object instruction : prevBlock) {
+            Instruction inst = (Instruction) instruction;
+            offsetToBlock.put(inst.offset, block);
         }
     }
 

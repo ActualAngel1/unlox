@@ -2,27 +2,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BasicBlock {
-    private List<Instruction> Block;
+    private List<Object> Block;
     private List<BasicBlock> successors;
     private Instruction jump;
 
-    BasicBlock(List<Instruction> Block, List<BasicBlock> successors, Instruction jump) {
+    BasicBlock(List<Object> Block, List<BasicBlock> successors, Instruction jump) {
         this.Block = Block;
         this.successors = successors;
         this.jump = jump;
     }
 
-    BasicBlock(List<Instruction> Block, Instruction jump) {
+    BasicBlock(List<Object> Block, Instruction jump) {
         this.Block = Block;
         this.successors = new ArrayList<>();
         this.jump = jump;
     }
 
-    public void setInstructions(List<Instruction> instructions) {
+    public void setInstructions(List<Object> instructions) {
         this.Block = instructions;
     }
 
-    public List<Instruction> getInstructions() {
+    public List<Object> getInstructions() {
         return this.Block;
     }
 
@@ -51,7 +51,8 @@ public class BasicBlock {
 
     public String toString() {
         StringBuilder str = new StringBuilder("\n Basic block: \n");
-        for (Instruction instruction : Block) {
+        for (Object instruction : Block) {
+            Instruction inst = (Instruction) instruction;
             str.append(instruction.toString()).append('\n');
         }
 
