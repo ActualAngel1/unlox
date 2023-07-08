@@ -91,7 +91,8 @@ class Lexer {
     }
 
     private Instruction createInstruction(OpCode code, String lexeme) {
-        Instruction instruction = new Instruction(code, offset, lexeme, currentLines.get(offset));
+        // Fix later
+        Instruction instruction = new Instruction(code, offset, lexeme, 1);
         offset++;
         return instruction;
     }
@@ -109,16 +110,23 @@ class Lexer {
     }
 
     private Instruction createReturnInstruction(OpCode code, String lexeme) {
-        return new Instruction(code, offset, lexeme, currentLines.get(offset-2)+1);
+        // fix later
+        return new Instruction(code, offset, lexeme, 2);
     }
 
     private Instruction scanInstruction() {
         String currentInstruction = source[current];
         switch (currentInstruction) {
 
-            case "OP_NIL", "OP_TRUE", "OP_FALSE", "OP_POP", "OP_GET_LOCAL", "OP_SET_LOCAL", "OP_GET_GLOBAL", "OP_DEFINE_GLOBAL", "OP_SET_GLOBAL", "OP_EQUAL", "OP_GREATER", "OP_LESS", "OP_ADD", "OP_SUBTRACT", "OP_MULTIPLY", "OP_DIVIDE", "OP_NOT", "OP_NEGATE", "OP_CALL", "OP_PRINT" -> {
+            case "OP_NIL", "OP_TRUE", "OP_FALSE", "OP_POP", "OP_GET_LOCAL", "OP_SET_LOCAL", "OP_GET_GLOBAL", "OP_DEFINE_GLOBAL", "OP_SET_GLOBAL", "OP_EQUAL", "OP_GREATER", "OP_LESS", "OP_ADD", "OP_SUBTRACT", "OP_MULTIPLY", "OP_DIVIDE", "OP_NOT", "OP_NEGATE", "OP_PRINT" -> {
                 OpCode code = OpCode.valueOf(currentInstruction);
                 return createInstruction(code, map.get(code));
+            }
+
+            case "OP_CALL" -> {
+                OpCode opCode = OpCode.valueOf(currentInstruction);
+                this.current++;
+                return constantInstruction(opCode, source[current]);
             }
 
             case "OP_RETURN" -> {

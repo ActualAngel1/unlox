@@ -35,15 +35,15 @@ public class Main {
 
         for (function func : functions) {
             names.add(func.getName());
-            printSimpleFunction(func);
+            // printSimpleFunction(func);
         }
 
         System.out.println("After simplification: \n");
 
-        for (function func : functions) {
-            func = new Simplify(func, names).getSimplifiedFunction();
-            printFunction(func);
-        }
+        functions.replaceAll(function -> {
+            return (new Simplify(function, names)).getSimplifiedFunction();
+            // printFunction(functions.get(i));
+        });
 
         for (function func : functions) {
             IRtoBB flowGraph = new IRtoBB(func.getInstructions());

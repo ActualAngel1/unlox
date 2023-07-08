@@ -56,6 +56,7 @@ public class BasicBlock {
                 str.append(string);
                 continue;
             }
+            // TODO: I CAN GET AWAY WITH A SIMPLE TOSTRING HERE NO?
 
             Instruction inst = (Instruction) instruction;
             str.append(instruction.toString()).append('\n');

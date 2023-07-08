@@ -1,14 +1,34 @@
+import java.util.List;
+
 abstract class Expr {
     interface Visitor<R> {
         R visitAssignExpr(Assign expr);
+        R visitCallExpr(Call expr);
+        R visitReturnExpr(Return stmt);
         R visitPrintExpr(Print expr);
         R visitBinaryExpr(Binary expr);
         R visitGroupingExpr(Grouping expr);
         R visitLiteralExpr(Literal expr);
         R visitUnaryExpr(Unary expr);
     }
+    static class Call extends Expr {
+        Call(Expr callee, Instruction instruction, List<Expr> arguments) {
+            this.callee = callee;
+            this.instruction = instruction;
+            this.arguments = arguments;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitCallExpr(this);
+        }
+
+        final Expr callee;
+        final Instruction instruction;
+        final List<Expr> arguments;
+    }
     static class Assign extends Expr {
-        Assign(String name, Expr value) {
+        Assign(Expr name, Expr value) {
             this.name = name;
             this.value = value;
         }
@@ -18,7 +38,19 @@ abstract class Expr {
             return visitor.visitAssignExpr(this);
         }
 
-        final String name;
+        final Expr name;
+        final Expr value;
+    }
+    static class Return extends Expr {
+        Return(Expr value) {
+            this.value = value;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitReturnExpr(this);
+        }
+
         final Expr value;
     }
     static class Print extends Expr {

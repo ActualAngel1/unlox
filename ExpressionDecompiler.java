@@ -59,10 +59,10 @@ public class ExpressionDecompiler {
         // Also this function will abstract away the jumps since they are not needed
         List<Instruction> result = new ArrayList<>();
         int i;
-        for (i = 0; i < instructions.size()-1; i++) {
+        for (i = 0; i < instructions.size(); i++) {
             Instruction instruction = instructions.get(i);
 
-            if (i == instructions.size()-2) {
+            if (i == instructions.size()-1) {
                 result.add(instruction);
                 continue;
             }
@@ -98,9 +98,13 @@ public class ExpressionDecompiler {
             } else if (isUnary(instruction)){
                 unary(stack, instruction);
             } else if (instruction.type == OpCode.OP_DEFINE_GLOBAL) {
-                assign(stack, instruction);
+                assign(stack);
             } else if (instruction.type == OpCode.OP_PRINT) {
-                printStmt(stack, instruction);
+                printExpr(stack);
+            } else if (instruction.type == OpCode.OP_RETURN) {
+                returnExpr(stack);
+            } else if (instruction.type == OpCode.OP_CALL) {
+                callExpr(stack, instruction);
             } else {
                 binary(stack, instruction);
             }
@@ -109,11 +113,31 @@ public class ExpressionDecompiler {
         return new ArrayList<>(stack);
     }
 
-    private static void printStmt(Stack<Expr> stack, Instruction instruction) {
+    private static void callExpr(Stack<Expr> stack, Instruction instruction) {
+        List<Expr> arguments = new ArrayList<>();
+        int argCount = Integer.parseInt(instruction.literal);
+        for (int i = 0; i < argCount; i++) {
+            arguments.add(stack.pop());
+        }
+
+        Collections.reverse(arguments);
+
+        Expr funcName = stack.pop();
+
+        stack.push(new Expr.Call(funcName, instruction, arguments));
+    }
+
+    private static void returnExpr(Stack<Expr> stack) {
+        stack.push(new Expr.Return(stack.pop()));
+    }
+
+    private static void printExpr(Stack<Expr> stack) {
         stack.push(new Expr.Print(stack.pop()));
     }
-    private static void assign(Stack<Expr> stack, Instruction instruction) {
-        stack.push(new Expr.Assign(instruction.literal, stack.pop()));
+    private static void assign(Stack<Expr> stack) {
+        Expr name = stack.pop();
+        Expr value = stack.pop();
+        stack.push(new Expr.Assign(name, value));
     }
     private static void binary(Stack<Expr> stack, Instruction instruction) {
         if (stack.size() < 2) {
