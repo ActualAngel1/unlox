@@ -46,11 +46,14 @@ public class Main {
         }
 
         for (function func : functions) {
-            IRtoBB ir = new IRtoBB(func.getInstructions());
-            ir.transform();
-            ir.split();
-            ir.link();
-            ir.printBlocks();
+            IRtoBB flowGraph = new IRtoBB(func.getInstructions());
+            flowGraph.transform();
+            flowGraph.split();
+            flowGraph.link();
+            flowGraph.printBlocks();
+
+            BasicBlock CFG = flowGraph.getCFG();
+            new ExpressionDecompiler().decompile(CFG);
         }
     }
 

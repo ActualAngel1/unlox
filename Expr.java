@@ -1,12 +1,27 @@
 abstract class Expr {
     interface Visitor<R> {
+        R visitAssignExpr(Assign expr);
         R visitBinaryExpr(Binary expr);
         R visitGroupingExpr(Grouping expr);
         R visitLiteralExpr(Literal expr);
         R visitUnaryExpr(Unary expr);
     }
+    static class Assign extends Expr {
+        Assign(String name, Expr value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAssignExpr(this);
+        }
+
+        final String name;
+        final Expr value;
+    }
     static class Binary extends Expr {
-        Binary(Expr left, OpCode operator, Expr right) {
+        Binary(Expr left, Instruction operator, Expr right) {
             this.left = left;
             this.operator = operator;
             this.right = right;
@@ -18,7 +33,7 @@ abstract class Expr {
         }
 
         final Expr left;
-        final OpCode operator;
+        final Instruction operator;
         final Expr right;
     }
 
@@ -51,7 +66,7 @@ abstract class Expr {
     abstract <R> R accept(Visitor<R> visitor);
 
     static class Unary extends Expr {
-        Unary(OpCode operator, Expr right) {
+        Unary(Instruction operator, Expr right) {
             this.operator = operator;
             this.right = right;
         }
@@ -61,7 +76,7 @@ abstract class Expr {
             return visitor.visitUnaryExpr(this);
         }
 
-        final OpCode operator;
+        final Instruction operator;
         final Expr right;
     }
 }

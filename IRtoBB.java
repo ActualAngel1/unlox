@@ -11,6 +11,10 @@ public class IRtoBB {
         this.IR = IR;
     }
 
+    public BasicBlock getCFG() {
+        return this.blocks.get(0);
+    }
+
     public void transform() {
         List<Object> block = new ArrayList<>();
         Stack<Instruction> stack = new Stack<>();
