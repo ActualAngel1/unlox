@@ -33,11 +33,9 @@ public class ExpressionDecompiler {
         map.put(OpCode.OP_NOT, 2);
         map.put(OpCode.OP_NEGATE, 2);
     }
-    public void decompile(BasicBlock block) {
-        // Decompile this block;
-        decompileExpressions(block);
-        for (BasicBlock child : block.getSuccessors()) {
-            decompile(child);
+    public void decompile(List<BasicBlock> blocks) {
+        for (BasicBlock block : blocks) {
+            decompileExpressions(block);
         }
     }
 
@@ -61,8 +59,14 @@ public class ExpressionDecompiler {
         // Also this function will abstract away the jumps since they are not needed
         List<Instruction> result = new ArrayList<>();
         int i;
-        for (i = 0; i < instructions.size()-2; i++) {
+        for (i = 0; i < instructions.size()-1; i++) {
             Instruction instruction = instructions.get(i);
+
+            if (i == instructions.size()-2) {
+                result.add(instruction);
+                continue;
+            }
+
             Instruction nextInstruction = instructions.get(i+1);
             if (isControlFlowAltering(instruction)) break;
 
@@ -80,8 +84,6 @@ public class ExpressionDecompiler {
             }
         }
 
-        result.add(instructions.get(i+1));
-
         return result;
     }
 
@@ -97,6 +99,8 @@ public class ExpressionDecompiler {
                 unary(stack, instruction);
             } else if (instruction.type == OpCode.OP_DEFINE_GLOBAL) {
                 assign(stack, instruction);
+            } else if (instruction.type == OpCode.OP_PRINT) {
+                printStmt(stack, instruction);
             } else {
                 binary(stack, instruction);
             }
@@ -105,6 +109,9 @@ public class ExpressionDecompiler {
         return new ArrayList<>(stack);
     }
 
+    private static void printStmt(Stack<Expr> stack, Instruction instruction) {
+        stack.push(new Expr.Print(stack.pop()));
+    }
     private static void assign(Stack<Expr> stack, Instruction instruction) {
         stack.push(new Expr.Assign(instruction.literal, stack.pop()));
     }
@@ -136,7 +143,7 @@ public class ExpressionDecompiler {
     }
 
     private static void literal(Stack<Expr> stack, Instruction instruction) {
-        stack.push(new Expr.Literal(Integer.parseInt(instruction.literal)));
+        stack.push(new Expr.Literal(instruction.literal));
     }
 
     private boolean isUnary(Instruction instruction) {

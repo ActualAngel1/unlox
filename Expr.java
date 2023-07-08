@@ -1,6 +1,7 @@
 abstract class Expr {
     interface Visitor<R> {
         R visitAssignExpr(Assign expr);
+        R visitPrintExpr(Print expr);
         R visitBinaryExpr(Binary expr);
         R visitGroupingExpr(Grouping expr);
         R visitLiteralExpr(Literal expr);
@@ -19,6 +20,16 @@ abstract class Expr {
 
         final String name;
         final Expr value;
+    }
+    static class Print extends Expr {
+        Print(Expr inner) {
+            this.inner = inner;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) { return visitor.visitPrintExpr(this); }
+
+        final Expr inner;
     }
     static class Binary extends Expr {
         Binary(Expr left, Instruction operator, Expr right) {
@@ -51,7 +62,7 @@ abstract class Expr {
     }
 
     static class Literal extends Expr {
-        Literal(Integer value) {
+        Literal(String value) {
             this.value = value;
         }
 
@@ -60,7 +71,7 @@ abstract class Expr {
             return visitor.visitLiteralExpr(this);
         }
 
-        final Integer value;
+        final String value;
     }
 
     abstract <R> R accept(Visitor<R> visitor);

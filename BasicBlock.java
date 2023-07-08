@@ -52,6 +52,11 @@ public class BasicBlock {
     public String toString() {
         StringBuilder str = new StringBuilder("\n Basic block: \n");
         for (Object instruction : Block) {
+            if (instruction instanceof String string) {
+                str.append(string);
+                continue;
+            }
+
             Instruction inst = (Instruction) instruction;
             str.append(instruction.toString()).append('\n');
         }

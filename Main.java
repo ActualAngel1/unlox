@@ -52,8 +52,28 @@ public class Main {
             flowGraph.link();
             flowGraph.printBlocks();
 
-            BasicBlock CFG = flowGraph.getCFG();
-            new ExpressionDecompiler().decompile(CFG);
+            List<BasicBlock> blocks = flowGraph.getBlocks();
+            new ExpressionDecompiler().decompile(blocks);
+            new AstToSource().transformAll(blocks);
+
+            printBlocks(blocks);
+        }
+    }
+
+    // TODO: Remove this function later
+
+    private static void printBlocks(List<BasicBlock> blocks) {
+        System.out.println("\n");
+        for (int i = 0; i < blocks.size(); i++) {
+            System.out.println("id: " + i + " Instructions: " + blocks.get(i));
+            System.out.println("Successors: ");
+            System.out.println();
+
+            for (BasicBlock block : blocks.get(i).getSuccessors()) {
+                System.out.println(blocks.indexOf(block) + ", ");
+            }
+
+            System.out.println();
         }
     }
 

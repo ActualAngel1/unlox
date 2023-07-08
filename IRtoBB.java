@@ -11,6 +11,10 @@ public class IRtoBB {
         this.IR = IR;
     }
 
+    public List<BasicBlock> getBlocks() {
+        return this.blocks;
+    }
+
     public BasicBlock getCFG() {
         return this.blocks.get(0);
     }
