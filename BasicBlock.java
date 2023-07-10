@@ -2,6 +2,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BasicBlock {
+    enum EdgeType {
+        False, True
+    }
+    private EdgeType type;
     private static int id = 0;
     private List<Object> Block;
     private List<BasicBlock> successors;
@@ -68,7 +72,9 @@ public class BasicBlock {
             str.append(instruction.toString()).append('\n');
         }
 
-        return str.toString();
+        return str.append("Type: ")
+                .append(this.type != null ? this.type.toString() : "")
+                .toString();
     }
 
     public List<BasicBlock> getPredecessors() {
@@ -81,6 +87,18 @@ public class BasicBlock {
 
     public void addPredecessor(BasicBlock predecessor) {
         this.predecessors.add(predecessor);
+    }
+
+    public void setEdgeType(EdgeType type) {
+        this.type = type;
+    }
+
+    public EdgeType getEdgeType() {
+        return this.type;
+    }
+
+    public int getId() {
+        return id;
     }
 
 }

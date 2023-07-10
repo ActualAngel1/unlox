@@ -97,6 +97,7 @@ public class ExpressionDecompiler {
         Stack<Expr> stack = new Stack<>();
 
         for (Instruction instruction : instructions) {
+            if (isControlFlowAltering(instruction)) continue;
             if (instruction.type == OpCode.OP_POP) continue;
 
             if (isConstant(instruction)) {
@@ -147,6 +148,8 @@ public class ExpressionDecompiler {
     }
     private static void binary(Stack<Expr> stack, Instruction instruction) {
         if (stack.size() < 2) {
+            System.out.println(instruction);
+            System.out.println(stack);
             throw new RuntimeException("This is not a valid RPN Representation");
         }
 

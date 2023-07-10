@@ -63,9 +63,12 @@ public class IRtoBB {
                 if it is true, you don't jump, thus you continue to the next block, which needs to be
                 linked
         */
+        if (previous.getJump().type == OpCode.OP_JUMP_IF_FALSE)
+                current.setEdgeType(BasicBlock.EdgeType.True);
 
         if (!isJumpInstruction(previous.getJump())) {
             // link the prev block to current block
+
             previous.addChild(current);
             current.addPredecessor(previous);
         }
@@ -160,10 +163,11 @@ public class IRtoBB {
                 int offset = Integer.parseInt(jump.literal);
                 BasicBlock jumpedTo = offsetToBlock.get(offset);
 
+                if (block.getJump().type == OpCode.OP_JUMP_IF_FALSE)
+                        jumpedTo.setEdgeType(BasicBlock.EdgeType.False);
                 block.addChild(jumpedTo);
                 jumpedTo.addPredecessor(block);
             }
         }
     }
-
 }
