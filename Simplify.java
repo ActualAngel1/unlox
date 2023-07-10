@@ -45,7 +45,11 @@ public class Simplify {
                     break;
 
                 case OP_SET_GLOBAL:
+                    i+=2;
+                    simplified.add(instructions.get(i));
+                    i-=2;
                     simplifyOpSetGlobal(i, instruction, simplified);
+                    i+=2;
                     break;
 
                 case OP_POP:

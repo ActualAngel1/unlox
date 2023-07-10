@@ -104,6 +104,8 @@ public class ExpressionDecompiler {
                 literal(stack, instruction);
             } else if (isUnary(instruction)){
                 unary(stack, instruction);
+            } else if (instruction.type == OpCode.OP_SET_GLOBAL) {
+                set(stack, instruction);
             } else if (instruction.type == OpCode.OP_DEFINE_GLOBAL) {
                 assign(stack);
             } else if (instruction.type == OpCode.OP_PRINT) {
@@ -118,6 +120,13 @@ public class ExpressionDecompiler {
         }
 
         return new ArrayList<>(stack);
+    }
+
+    private static void set(Stack<Expr> stack, Instruction instruction) {
+        Expr name = stack.pop();
+        Expr value = stack.pop();
+
+        stack.push(new Expr.Binary(name, instruction, value));
     }
 
     private static void callExpr(Stack<Expr> stack, Instruction instruction) {

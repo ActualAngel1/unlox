@@ -6,6 +6,7 @@ public class BasicBlock {
         False, True
     }
     private EdgeType type;
+    private boolean isLoop = false;
     private static int id = 0;
     private List<Object> Block;
     private List<BasicBlock> successors;
@@ -99,6 +100,14 @@ public class BasicBlock {
 
     public int getId() {
         return id;
+    }
+
+    public void setLoop(boolean isLoop) {
+        this.isLoop = isLoop;
+    }
+
+    public boolean isLoop() {
+        return this.isLoop;
     }
 
 }

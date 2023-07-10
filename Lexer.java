@@ -104,7 +104,7 @@ class Lexer {
     }
 
     private Instruction jumpInstruction(OpCode code, String lexeme) {
-        Instruction instruction = new Instruction(code, offset, lexeme, currentLines.get(offset));
+        Instruction instruction = new Instruction(code, code == OpCode.OP_LOOP ? offset - Integer.parseInt(lexeme) : offset, lexeme, currentLines.get(offset));
         offset+=3;
         return instruction;
     }

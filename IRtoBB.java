@@ -113,11 +113,19 @@ public class IRtoBB {
          }
     }
 
+    private BasicBlock getBlockFromOffset(int offset) {
+        while (!offsetToBlock.containsKey(offset)) offset++;
+        return offsetToBlock.get(offset);
+    }
+
     private void split(int offset) {
+        // TODO: CHECK IF I NEED TO MAKE DIFFERENT CASES FOR LOOP AND JUMP INSTRUCTIONS, I THINK NOT BUT IT MIGHT CAUSE ERRORS
         // Step 1: get block
-        BasicBlock block = offsetToBlock.get(offset);
+        BasicBlock block = getBlockFromOffset(offset);
         List<Object> subBlock = new ArrayList<>();
         List<Object> prevBlock = new ArrayList<>();
+
+        if (offset == ((Instruction) block.getInstructions().get(0)).offset) return;
 
         // Step 2: create the new block
         for (Object instruction : block.getInstructions()) {
@@ -161,10 +169,12 @@ public class IRtoBB {
             Instruction jump = block.getJump();
             if (isControlFlowAltering(jump)) {
                 int offset = Integer.parseInt(jump.literal);
-                BasicBlock jumpedTo = offsetToBlock.get(offset);
+                BasicBlock jumpedTo = getBlockFromOffset(offset);
 
                 if (block.getJump().type == OpCode.OP_JUMP_IF_FALSE)
                         jumpedTo.setEdgeType(BasicBlock.EdgeType.False);
+                if (block.getJump().type == OpCode.OP_LOOP)
+                        jumpedTo.setLoop(true);
                 block.addChild(jumpedTo);
                 jumpedTo.addPredecessor(block);
             }
