@@ -52,6 +52,10 @@ public class BasicBlock {
         this.successors = children;
     }
 
+    public void deleteSuccessor(BasicBlock block) {
+        this.successors.remove(block);
+    }
+
     public BasicBlock getSuccessorAt(int index) {
         return this.successors.get(index);
     }
@@ -80,6 +84,9 @@ public class BasicBlock {
 
     public List<BasicBlock> getPredecessors() {
         return predecessors;
+    }
+    public void deletePredecessor(BasicBlock block) {
+        this.predecessors.remove(block);
     }
 
     public void setPredecessors(List<BasicBlock> predecessors) {

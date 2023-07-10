@@ -115,6 +115,8 @@ public class IRtoBB {
 
     private BasicBlock getBlockFromOffset(int offset) {
         while (!offsetToBlock.containsKey(offset)) offset++;
+        offset++;
+        while (!offsetToBlock.containsKey(offset)) offset++;
         return offsetToBlock.get(offset);
     }
 
@@ -130,7 +132,7 @@ public class IRtoBB {
         // Step 2: create the new block
         for (Object instruction : block.getInstructions()) {
             Instruction inst = (Instruction) instruction;
-            if (inst.offset >= offset) {
+            if (inst.offset > offset) {
                 subBlock.add(inst);
             } else {
                 prevBlock.add(inst);
