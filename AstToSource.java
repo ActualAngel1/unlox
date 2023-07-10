@@ -57,7 +57,7 @@ public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitBlockStmt(Stmt.Block stmt) {
-        StringBuilder str = null;
+        StringBuilder str = new StringBuilder();
         for (Stmt statement : stmt.statements) {
             str.append("\t").append(statement.accept(this)).append("\n");
         }

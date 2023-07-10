@@ -60,6 +60,14 @@ public class BasicBlock {
         return this.successors.get(index);
     }
 
+    public void setInstructionAt(int index, Object instruction) {
+        this.Block.set(index, instruction);
+    }
+
+    public Object getInstructionAt(int index) {
+        return this.Block.get(index);
+    }
+
     public List<BasicBlock> getSuccessors() {
         return this.successors;
     }
@@ -78,8 +86,7 @@ public class BasicBlock {
         }
 
         return str.append("Type: ")
-                .append(this.type != null ? this.type.toString() : "")
-                .toString();
+                .append(this.type != null ? this.type.toString() : "").append("\n Is back edge? ").append(this.isLoop()).toString();
     }
 
     public List<BasicBlock> getPredecessors() {

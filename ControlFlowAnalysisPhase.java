@@ -12,23 +12,54 @@ public class ControlFlowAnalysisPhase {
         this.firstBlock = decompile(firstBlock);
     }
 
+    public List<BasicBlock> getBlocks() {
+        return this.blocks;
+    }
+
     public BasicBlock decompile(BasicBlock firstBlock) {
-        while (firstBlock.getSuccessors().size() != 0) {
+        // while (firstBlock.getSuccessors().size() != 0) {
             Set<Integer> visited = new HashSet<>();
             decompile(firstBlock, visited);
-        }
+        // }
 
         return null;
     }
 
     public void decompile(BasicBlock firstBlock, Set<Integer> visited) {
-        BasicBlock newBlock;
         if (visited.contains(firstBlock.getId())) return;
+        visited.add(firstBlock.getId());
         if (isBackEdge(firstBlock)) {
+            BasicBlock leftBlock = firstBlock.getSuccessors().get(0);
+            BasicBlock rightBlock = firstBlock.getSuccessors().get(1);
+            BasicBlock trueEdge = leftBlock.getEdgeType() == BasicBlock.EdgeType.False ? leftBlock : rightBlock;
+            BasicBlock falseEdge = leftBlock.getEdgeType() == BasicBlock.EdgeType.True ? leftBlock : rightBlock;
+
+            if (falseEdge.getSuccessors().contains(firstBlock)) {
+                int exprCount = firstBlock.getInstructions().size();
+                Expr conditional = ((Stmt.Expression) firstBlock.getInstructionAt(exprCount - 1)).expression;
+                List<Stmt> statements = new ArrayList<>();
+                for (Object stmt : falseEdge.getInstructions()) {
+                    Stmt statement = (Stmt) stmt;
+                    statements.add(statement);
+                }
+
+                Stmt whileBody = new Stmt.Block(statements);
+                Stmt.While whileStmt = new Stmt.While(conditional, whileBody);
+
+                firstBlock.setInstructionAt(exprCount - 1, whileStmt);
+                firstBlock.setLoop(false);
+                List<BasicBlock> successors = new ArrayList<>();
+                successors.add(trueEdge);
+                
+                firstBlock.setSuccessors(successors);
+                blocks.remove(falseEdge);
+            }
+        } else if (firstBlock.getSuccessors().size() == 2) {
 
         }
+
         for (BasicBlock child : firstBlock.getSuccessors()) {
-            decompile(child);
+            decompile(child, visited);
         }
     }
 

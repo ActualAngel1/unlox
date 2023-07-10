@@ -51,10 +51,10 @@ public class Main {
 
             List<BasicBlock> blocks = flowGraph.getBlocks();
             new ExpressionDecompiler().decompile(blocks);
-            // BasicBlock block = new ControlFlowAnalysisPhase(blocks).decompile();
-            new AstToSource().transformAll(blocks);
+            List<BasicBlock> afterBlocks = new ControlFlowAnalysisPhase(blocks).getBlocks();
+            new AstToSource().transformAll(afterBlocks);
 
-            printBlocks(blocks);
+            printBlocks(afterBlocks);
         }
     }
 
