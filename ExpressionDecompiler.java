@@ -42,7 +42,13 @@ public class ExpressionDecompiler {
     private void decompileExpressions(BasicBlock block) {
         List<Instruction> instructions = transform(block);
         List<Object> exprs = new ArrayList<>(decompileExpressions(instructions));
-        block.setInstructions(exprs);
+        List<Object> expressionStmts = new ArrayList<>();
+        for (Object expr : exprs) {
+            Expr expression = (Expr) expr;
+            expressionStmts.add(new Stmt.Expression(expression));
+        }
+
+        block.setInstructions(expressionStmts);
     }
 
     // make it into a list of tokens, exclude the jump instructions from this.

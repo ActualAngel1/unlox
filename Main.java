@@ -54,13 +54,12 @@ public class Main {
 
             List<BasicBlock> blocks = flowGraph.getBlocks();
             new ExpressionDecompiler().decompile(blocks);
+            // BasicBlock block = new ControlFlowAnalysisPhase(blocks).decompile();
             new AstToSource().transformAll(blocks);
 
             printBlocks(blocks);
         }
     }
-
-    // TODO: Remove this function later
 
     private static void printBlocks(List<BasicBlock> blocks) {
         System.out.println("\n");

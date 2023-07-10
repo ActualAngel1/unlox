@@ -1,16 +1,14 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class AstToSource implements Expr.Visitor<String> {
-    String transform(Expr ast) {
-        String result = ast.accept(this);
-        result += result.equals("") ? "" : ";";
-        return result;
+public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
+    String transform(Stmt ast) {
+        return ast.accept(this);
     }
     public void transform(BasicBlock block) {
         List<String> strings = new ArrayList<>();
         for (Object expr : block.getInstructions()) {
-            Expr expression = (Expr) expr;
+            Stmt expression = (Stmt) expr;
             String source = transform(expression);
             strings.add(source);
         }
@@ -36,6 +34,35 @@ public class AstToSource implements Expr.Visitor<String> {
         }
 
         return call.append(")").toString();
+    }
+
+    @Override
+    public String visitWhileStmt(Stmt.While stmt) {
+        return "while (" + stmt.condition.accept(this) + ") {\n" + stmt.body.accept(this) + "}";
+    }
+
+    @Override
+    public String visitExpressionStmt(Stmt.Expression stmt) {
+        String result = stmt.expression.accept(this);
+        result += result.equals("") ? "" : ";";
+
+        return result;
+    }
+
+    @Override
+    public String visitIfStmt(Stmt.If stmt) {
+        String elsePart = stmt.elseBranch != null ? "else { \n" + stmt.elseBranch.accept(this) + "}" : "";
+        return "if (" + stmt.condition.accept(this) + ") {" + stmt.thenBranch.accept(this) + "} " + elsePart;
+    }
+
+    @Override
+    public String visitBlockStmt(Stmt.Block stmt) {
+        StringBuilder str = null;
+        for (Stmt statement : stmt.statements) {
+            str.append("\t").append(statement.accept(this)).append("\n");
+        }
+
+        return str.toString();
     }
 
     @Override

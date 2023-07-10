@@ -67,6 +67,7 @@ public class IRtoBB {
         if (!isJumpInstruction(previous.getJump())) {
             // link the prev block to current block
             previous.addChild(current);
+            current.addPredecessor(previous);
         }
     }
 
@@ -130,6 +131,7 @@ public class IRtoBB {
         // Step 3: Link and add the new block to the block list
         BasicBlock newBlock = new BasicBlock(subBlock, block.getJump());
         block.addChild(newBlock);
+        newBlock.addPredecessor(block);
         blocks.add(newBlock);
 
         // Step 4: Edit the prev block
@@ -159,6 +161,7 @@ public class IRtoBB {
                 BasicBlock jumpedTo = offsetToBlock.get(offset);
 
                 block.addChild(jumpedTo);
+                jumpedTo.addPredecessor(block);
             }
         }
     }
