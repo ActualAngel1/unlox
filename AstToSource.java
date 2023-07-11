@@ -38,13 +38,14 @@ public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitWhileStmt(Stmt.While stmt) {
-        return "while (" + stmt.condition.accept(this) + ") {\n" + stmt.body.accept(this) + "}";
+        return "while (" + stmt.condition.accept(this) + ") {\n" + stmt.body.accept(this) + "}\n";
     }
 
     @Override
     public String visitExpressionStmt(Stmt.Expression stmt) {
         String result = stmt.expression.accept(this);
         result += result.equals("") ? "" : ";";
+        result += "\n";
 
         return result;
     }
@@ -52,7 +53,7 @@ public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
     @Override
     public String visitIfStmt(Stmt.If stmt) {
         String elsePart = stmt.elseBranch != null ? "else { \n" + stmt.elseBranch.accept(this) + "}" : "";
-        return "if (" + stmt.condition.accept(this) + ") {" + stmt.thenBranch.accept(this) + "} " + elsePart;
+        return "if (" + stmt.condition.accept(this) + ") {" + stmt.thenBranch.accept(this) + "} " + elsePart + "\n";
     }
 
     @Override

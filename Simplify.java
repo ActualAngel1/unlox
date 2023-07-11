@@ -53,7 +53,7 @@ public class Simplify {
                     break;
 
                 case OP_POP:
-                    locals.pop();
+                    if (!locals.isEmpty()) locals.pop();
                     simplified.add(instruction);
                     break;
 
@@ -67,11 +67,15 @@ public class Simplify {
                     break;
 
                 case OP_SET_LOCAL:
-                    simplified.add(instruction);
+                    Instruction curr = instructions.get(i);
                     int index = Integer.parseInt(instructions.get(i + 1).literal);
                     String localVar = locals.get(index);
                     Instruction var = new Instruction(OpCode.OP_LEXME, instruction.offset, localVar, instruction.line);
-                    simplified.add(i, var);
+                    Instruction next = instructions.get(i+1);
+                    simplified.add(var);
+                    i++;
+                    simplified.add(curr);
+                    // simplified.add(index, var); // TODO: ?????
                     break;
 
                 case OP_NO_INSTRUCTION:

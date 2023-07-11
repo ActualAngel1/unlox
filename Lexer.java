@@ -13,6 +13,7 @@ class Lexer {
         map.put(OpCode.OP_TRUE,  "true");
         map.put(OpCode.OP_FALSE,  "false");
         map.put(OpCode.OP_POP, "");
+        map.put(OpCode.OP_SET_LOCAL, "=");
         map.put(OpCode.OP_SET_GLOBAL, "=");
         map.put(OpCode.OP_DEFINE_GLOBAL,"=");
         map.put(OpCode.OP_EQUAL, "==");
@@ -98,13 +99,13 @@ class Lexer {
     }
 
     private Instruction constantInstruction(OpCode code, String lexeme) {
-        Instruction instruction = new Instruction(code, offset, lexeme, currentLines.get(offset));
+        Instruction instruction = new Instruction(code, offset, lexeme, currentLines.get(0));
         offset+=2;
         return instruction;
     }
 
     private Instruction jumpInstruction(OpCode code, String lexeme) {
-        Instruction instruction = new Instruction(code, code == OpCode.OP_LOOP ? offset - Integer.parseInt(lexeme) : offset, lexeme, currentLines.get(offset));
+        Instruction instruction = new Instruction(code, code == OpCode.OP_LOOP ? offset - Integer.parseInt(lexeme) : offset, lexeme, currentLines.get(0));
         offset+=3;
         return instruction;
     }

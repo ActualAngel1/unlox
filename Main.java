@@ -43,6 +43,10 @@ public class Main {
         functions.replaceAll(function -> (new Simplify(function, names)).getSimplifiedFunction());
 
         for (function func : functions) {
+            printFunction(func);
+        }
+
+        for (function func : functions) {
             IRtoBB flowGraph = new IRtoBB(func.getInstructions());
             flowGraph.transform();
             flowGraph.split();

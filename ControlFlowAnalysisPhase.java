@@ -5,11 +5,11 @@ import java.util.Set;
 
 public class ControlFlowAnalysisPhase {
     List<BasicBlock> blocks;
-    BasicBlock firstBlock;
+    BasicBlock first;
     ControlFlowAnalysisPhase(List<BasicBlock> blocks) {
         this.blocks = blocks;
-        this.firstBlock = blocks.get(0);
-        this.firstBlock = decompile(firstBlock);
+        this.first = blocks.get(0);
+        this.first = decompile(first);
     }
 
     public List<BasicBlock> getBlocks() {
@@ -18,17 +18,20 @@ public class ControlFlowAnalysisPhase {
 
     public BasicBlock decompile(BasicBlock firstBlock) {
         // while (firstBlock.getSuccessors().size() != 0) {
-            Set<Integer> visited = new HashSet<>();
+            Set<BasicBlock> visited = new HashSet<>();
+            decompile(firstBlock, visited);
+            visited = new HashSet<>();
             decompile(firstBlock, visited);
         // }
 
         return null;
     }
 
-    public void decompile(BasicBlock firstBlock, Set<Integer> visited) {
-        if (visited.contains(firstBlock.getId())) return;
-        visited.add(firstBlock.getId());
-        if (isBackEdge(firstBlock)) {
+    public void decompile(BasicBlock firstBlock, Set<BasicBlock> visited) {
+        if (visited.contains(firstBlock)) return;
+        visited.add(firstBlock);
+        if (isBackEdge(firstBlock) && firstBlock.getSuccessors().size() == 2) {
+            System.out.println("IN THIS");
             BasicBlock leftBlock = firstBlock.getSuccessors().get(0);
             BasicBlock rightBlock = firstBlock.getSuccessors().get(1);
             BasicBlock trueEdge = leftBlock.getEdgeType() == BasicBlock.EdgeType.False ? leftBlock : rightBlock;
@@ -56,6 +59,16 @@ public class ControlFlowAnalysisPhase {
             }
         } else if (firstBlock.getSuccessors().size() == 2) {
 
+        } else if (firstBlock.getPredecessors().size() == 1) {
+            BasicBlock prevBlock = firstBlock.getPredecessors().get(0);
+            if (prevBlock.getSuccessors().size() == 1) {
+                for (Object expr : firstBlock.getInstructions()) {
+                    prevBlock.addInstruction(expr);
+                }
+                prevBlock.setSuccessors(firstBlock.getSuccessors());
+                prevBlock.setEdgeType(firstBlock.getEdgeType());
+                this.blocks.remove(firstBlock);
+            }
         }
 
         for (BasicBlock child : firstBlock.getSuccessors()) {

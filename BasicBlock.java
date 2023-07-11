@@ -60,6 +60,10 @@ public class BasicBlock {
         return this.successors.get(index);
     }
 
+    public void addInstruction(Object instruction) {
+        this.Block.add(instruction);
+    }
+
     public void setInstructionAt(int index, Object instruction) {
         this.Block.set(index, instruction);
     }

@@ -120,8 +120,14 @@ public class IRtoBB {
         return offsetToBlock.get(offset);
     }
 
+    private int getOffset(int offset) {
+        while (!offsetToBlock.containsKey(offset)) offset++;
+        offset++;
+        while (!offsetToBlock.containsKey(offset)) offset++;
+        return offset;
+    }
+
     private void split(int offset) {
-        // TODO: CHECK IF I NEED TO MAKE DIFFERENT CASES FOR LOOP AND JUMP INSTRUCTIONS, I THINK NOT BUT IT MIGHT CAUSE ERRORS
         // Step 1: get block
         BasicBlock block = getBlockFromOffset(offset);
         List<Object> subBlock = new ArrayList<>();
@@ -132,7 +138,8 @@ public class IRtoBB {
         // Step 2: create the new block
         for (Object instruction : block.getInstructions()) {
             Instruction inst = (Instruction) instruction;
-            if (inst.offset > offset) {
+            // TODO: GET THE RIGHT OFFSET
+            if (inst.offset >= offset) {
                 subBlock.add(inst);
             } else {
                 prevBlock.add(inst);
@@ -143,6 +150,10 @@ public class IRtoBB {
 
         // Step 3: Link and add the new block to the block list
         BasicBlock newBlock = new BasicBlock(subBlock, block.getJump());
+        List<BasicBlock> prevEdges = block.getSuccessors();
+        newBlock.setSuccessors(prevEdges);
+        block.setSuccessors(new ArrayList<>());
+
         block.addChild(newBlock);
         newBlock.addPredecessor(block);
         blocks.add(newBlock);

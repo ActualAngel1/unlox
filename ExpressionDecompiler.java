@@ -104,7 +104,7 @@ public class ExpressionDecompiler {
                 literal(stack, instruction);
             } else if (isUnary(instruction)){
                 unary(stack, instruction);
-            } else if (instruction.type == OpCode.OP_SET_GLOBAL) {
+            } else if (instruction.type == OpCode.OP_SET_GLOBAL || instruction.type == OpCode.OP_SET_LOCAL) {
                 set(stack, instruction);
             } else if (instruction.type == OpCode.OP_DEFINE_GLOBAL) {
                 assign(stack);
