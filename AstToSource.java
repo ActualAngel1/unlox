@@ -53,7 +53,7 @@ public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
     @Override
     public String visitIfStmt(Stmt.If stmt) {
         String elsePart = stmt.elseBranch != null ? "else { \n" + stmt.elseBranch.accept(this) + "}" : "";
-        return "if (" + stmt.condition.accept(this) + ") {" + stmt.thenBranch.accept(this) + "} " + elsePart + "\n";
+        return "if (" + stmt.condition.accept(this) + ") {\n" + stmt.thenBranch.accept(this) + "} " + elsePart + "\n";
     }
 
     @Override

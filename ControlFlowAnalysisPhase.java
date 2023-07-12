@@ -17,13 +17,12 @@ public class ControlFlowAnalysisPhase {
     }
 
     public BasicBlock decompile(BasicBlock firstBlock) {
-        while (firstBlock.getSuccessors().size() != 0) {
+        // while (firstBlock.getSuccessors().size() != 0) {
             Set<BasicBlock> visited = new HashSet<>();
             decompile(firstBlock, visited);
             visited.clear();
             clean(firstBlock, visited);
 
-            /*
             visited.clear();
             decompile(firstBlock, visited);
 
@@ -44,10 +43,9 @@ public class ControlFlowAnalysisPhase {
 
             visited.clear();
             decompile(firstBlock, visited);
-            */
 
 
-        }
+        // }
 
         return null;
     }
@@ -78,12 +76,38 @@ public class ControlFlowAnalysisPhase {
                 firstBlock.setLoop(false);
                 List<BasicBlock> successors = new ArrayList<>();
                 successors.add(trueEdge);
-                
+
                 firstBlock.setSuccessors(successors);
                 blocks.remove(falseEdge);
             }
         } else if (firstBlock.getSuccessors().size() == 2) {
+            BasicBlock leftBlock = firstBlock.getSuccessors().get(0);
+            BasicBlock rightBlock = firstBlock.getSuccessors().get(1);
+            BasicBlock falseEdge = leftBlock.getEdgeType() == BasicBlock.EdgeType.False ? leftBlock : rightBlock;
+            BasicBlock trueEdge = leftBlock.getEdgeType() == BasicBlock.EdgeType.True ? leftBlock : rightBlock;
 
+            System.out.println("Is false block empty? : " + blocks.indexOf(falseEdge) + " " + isEmptyBlock(falseEdge));
+            if (isEmptyBlock(falseEdge) && falseEdge.getSuccessorAt(0) == trueEdge.getSuccessorAt(0)) {
+                int exprCount = firstBlock.getInstructions().size();
+                Expr condition = ((Stmt.Expression) firstBlock.getInstructionAt(exprCount - 1)).expression;
+                List<Stmt> statements = new ArrayList<>();
+                for (Object stmt : trueEdge.getInstructions()) {
+                    Stmt statement = (Stmt) stmt;
+                    statements.add(statement);
+                }
+
+                Stmt ifBody = new Stmt.Block(statements);
+                Stmt.If ifStmt = new Stmt.If(condition, ifBody, null);
+                firstBlock.setInstructionAt(exprCount - 1, ifStmt);
+                BasicBlock grandson = trueEdge.getSuccessorAt(0);
+                List<BasicBlock> successors = new ArrayList<>();
+                successors.add(grandson);
+
+                firstBlock.setSuccessors(successors);
+                firstBlock.setEdgeType(grandson.getEdgeType());
+                blocks.remove(trueEdge);
+                blocks.remove(falseEdge);
+            }
         } else if (firstBlock.getSuccessors().size() == 1) {
             BasicBlock nextBlock = firstBlock.getSuccessorAt(0);
             if ((nextBlock.getPredecessors().size() == 1 || nextBlock.getPredecessors().size() == 0) && !nextBlock.isLoop()) {
@@ -145,5 +169,16 @@ public class ControlFlowAnalysisPhase {
         for (BasicBlock child : block.getSuccessors()) {
             clean(child, visited);
         }
+    }
+
+    public boolean isEmptyBlock(BasicBlock block) {
+        if (block.getInstructions().size() == 0) return true;
+        if (block.getInstructionAt(0) == null) return true;
+
+        for (Object object : block.getInstructions()) {
+            if (!(object == null)) return false;
+        }
+
+        return true;
     }
 }

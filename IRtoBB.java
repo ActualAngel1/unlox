@@ -121,8 +121,6 @@ public class IRtoBB {
 
     private BasicBlock getBlockFromOffset(int offset) {
         while (!offsetToBlock.containsKey(offset)) offset++;
-        offset++;
-        while (!offsetToBlock.containsKey(offset)) offset++;
         return offsetToBlock.get(offset);
     }
 
