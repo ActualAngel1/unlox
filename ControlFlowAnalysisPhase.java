@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ControlFlowAnalysisPhase {
     List<BasicBlock> blocks;
@@ -86,7 +83,7 @@ public class ControlFlowAnalysisPhase {
             BasicBlock falseEdge = leftBlock.getEdgeType() == BasicBlock.EdgeType.False ? leftBlock : rightBlock;
             BasicBlock trueEdge = leftBlock.getEdgeType() == BasicBlock.EdgeType.True ? leftBlock : rightBlock;
 
-            System.out.println("Is false block empty? : " + blocks.indexOf(falseEdge) + " " + isEmptyBlock(falseEdge));
+            System.out.println("Is false block empty? : " + blocks.indexOf(trueEdge) + " " + isEmptyBlock(trueEdge));
             if (isEmptyBlock(falseEdge) && falseEdge.getSuccessorAt(0) == trueEdge.getSuccessorAt(0)) {
                 int exprCount = firstBlock.getInstructions().size();
                 Expr condition = ((Stmt.Expression) firstBlock.getInstructionAt(exprCount - 1)).expression;
@@ -106,6 +103,21 @@ public class ControlFlowAnalysisPhase {
                 firstBlock.setSuccessors(successors);
                 firstBlock.setEdgeType(grandson.getEdgeType());
                 blocks.remove(trueEdge);
+                blocks.remove(falseEdge);
+            } else if ((falseEdge.getSuccessors().size() == 1) && isEmptyBlock(trueEdge) &&
+                            isConditionalBlock(falseEdge) && leftBlock.getSuccessorAt(0) == rightBlock.getSuccessorAt(0)) {
+                System.out.println("FUCK<YOU>");
+                int exprCount = firstBlock.getInstructions().size();
+                Expr condition = ((Stmt.Expression) firstBlock.getInstructionAt(exprCount - 1)).expression;
+                Expr secondCondition = ((Stmt.Expression) falseEdge.getInstructionAt(0)).expression;
+
+                Expr.Logical orExpr = new  Expr.Logical(condition, " or ", secondCondition);
+                firstBlock.setInstructionAt(exprCount - 1, new Stmt.Expression(orExpr));
+                List<BasicBlock> successors = new ArrayList<>();
+                successors.add(trueEdge);
+
+                firstBlock.setSuccessors(successors);
+                firstBlock.setEdgeType(trueEdge.getEdgeType());
                 blocks.remove(falseEdge);
             }
         } else if (firstBlock.getSuccessors().size() == 1) {
@@ -146,6 +158,11 @@ public class ControlFlowAnalysisPhase {
         return false;
     }
 
+    public boolean isConditionalBlock(BasicBlock block) {
+        Expr Expression = ((Stmt.Expression) block.getInstructionAt(0)).expression;
+        return (block.getInstructions().size() == 1 && (((Expr.Binary) Expression).operator.type == OpCode.OP_GREATER || ((Expr.Binary) Expression).operator.type == OpCode.OP_LESS));
+    }
+
     // When classifying the control flow into statements there could be cases where the predecessor or successors list has empty items.
     public void clean(BasicBlock block, Set<BasicBlock> visited) {
         if (visited.contains(block)) return;
@@ -176,7 +193,7 @@ public class ControlFlowAnalysisPhase {
         if (block.getInstructionAt(0) == null) return true;
 
         for (Object object : block.getInstructions()) {
-            if (!(object == null)) return false;
+            if (!(object == null || Objects.equals(object.toString(), "") || Objects.equals(object.toString(), "\n"))) return false;
         }
 
         return true;

@@ -22,6 +22,7 @@ public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
         }
     }
 
+    @Override
     public String visitCallExpr(Expr.Call expr) {
         StringBuilder call = new StringBuilder(expr.callee.accept(this) + "(");
         int argCount = expr.arguments.size();
@@ -34,6 +35,11 @@ public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
         }
 
         return call.append(")").toString();
+    }
+
+    @Override
+    public String visitLogicalExpr(Expr.Logical expr) {
+        return expr.left.accept(this) + expr.operator + expr.right.accept(this);
     }
 
     @Override

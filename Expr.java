@@ -3,6 +3,7 @@ import java.util.List;
 abstract class Expr {
     interface Visitor<R> {
         R visitAssignExpr(Assign expr);
+        R visitLogicalExpr(Logical expr);
         R visitCallExpr(Call expr);
         R visitReturnExpr(Return stmt);
         R visitPrintExpr(Print expr);
@@ -41,6 +42,24 @@ abstract class Expr {
         final Expr name;
         final Expr value;
     }
+
+    static class Logical extends Expr {
+        Logical(Expr left, String operator, Expr right) {
+            this.left = left;
+            this.operator = operator;
+            this.right = right;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLogicalExpr(this);
+        }
+
+        final Expr left;
+        final String operator;
+        final Expr right;
+    }
+
     static class Return extends Expr {
         Return(Expr value) {
             this.value = value;

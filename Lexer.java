@@ -169,7 +169,9 @@ class Lexer {
         List<Integer> decompressed = new ArrayList<>();
         for (int i = 0; i < lines.size(); i+=2) {
             int line = lines.get(i);
-            int count = lines.get(i+1);
+
+            // built in max size of 10 thousand instructions
+            int count = Math.min(lines.get(i+1), 10000);
             for (int j = 0; j < count; j++) {
                 decompressed.add(line);
             }
