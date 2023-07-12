@@ -92,7 +92,13 @@ public class IRtoBB {
                 System.out.println(blocks.indexOf(block) + ", ");
             }
 
+            System.out.println("Predecessors: ");
             System.out.println();
+            for (BasicBlock block : blocks.get(i).getPredecessors()) {
+                System.out.println(blocks.indexOf(block) + ", ");
+            }
+
+            System.out.println("Pred count:" + blocks.get(i).getPredecessors().size() + " ,... " + blocks.get(i).getSuccessors().size());
         }
     }
 
