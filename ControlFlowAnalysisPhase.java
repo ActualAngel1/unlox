@@ -105,11 +105,15 @@ public class ControlFlowAnalysisPhase {
                 blocks.remove(trueEdge);
                 blocks.remove(falseEdge);
             } else if ((falseEdge.getSuccessors().size() == 1) && isEmptyBlock(trueEdge) &&
-                            isConditionalBlock(falseEdge) && leftBlock.getSuccessorAt(0) == rightBlock.getSuccessorAt(0)) {
-                System.out.println("FUCK<YOU>");
+                            isConditionalBlock(falseEdge) && (leftBlock.getSuccessorAt(0) == rightBlock.getSuccessorAt(0))
+                            && !isEmptyBlock(firstBlock)) {
                 int exprCount = firstBlock.getInstructions().size();
                 Expr condition = ((Stmt.Expression) firstBlock.getInstructionAt(exprCount - 1)).expression;
                 Expr secondCondition = ((Stmt.Expression) falseEdge.getInstructionAt(0)).expression;
+
+                // For operator precedence
+                if (condition instanceof Expr.Assign) condition = new Expr.Grouping(condition);
+                if (secondCondition instanceof Expr.Assign) secondCondition = new Expr.Grouping(secondCondition);
 
                 Expr.Logical orExpr = new  Expr.Logical(condition, " or ", secondCondition);
                 firstBlock.setInstructionAt(exprCount - 1, new Stmt.Expression(orExpr));
@@ -119,6 +123,28 @@ public class ControlFlowAnalysisPhase {
                 firstBlock.setSuccessors(successors);
                 firstBlock.setEdgeType(trueEdge.getEdgeType());
                 blocks.remove(falseEdge);
+            } else if (trueEdge.getSuccessors().size() == 1 && isConditionalBlock(trueEdge) && trueEdge.getSuccessorAt(0) == falseEdge) {
+                int exprCount = firstBlock.getInstructions().size();
+                Expr condition = ((Stmt.Expression) firstBlock.getInstructionAt(exprCount - 1)).expression;
+                Expr secondCondition = ((Stmt.Expression) trueEdge.getInstructionAt(0)).expression;
+
+                // For operator precedence
+                if (condition instanceof Expr.Assign ||
+                        (condition instanceof Expr.Logical &&
+                                Objects.equals(((Expr.Logical) condition).operator, " or "))) condition = new Expr.Grouping(condition);
+
+                if (secondCondition instanceof Expr.Assign ||
+                        (secondCondition instanceof Expr.Logical &&
+                                Objects.equals(((Expr.Logical) secondCondition).operator, " or "))) secondCondition = new Expr.Grouping(condition);
+
+                Expr.Logical andExpr = new  Expr.Logical(condition, " and ", secondCondition);
+                firstBlock.setInstructionAt(exprCount - 1, new Stmt.Expression(andExpr));
+                List<BasicBlock> successors = new ArrayList<>();
+                successors.add(falseEdge);
+
+                firstBlock.setSuccessors(successors);
+                firstBlock.setEdgeType(falseEdge.getEdgeType());
+                blocks.remove(trueEdge);
             }
         } else if (firstBlock.getSuccessors().size() == 1) {
             BasicBlock nextBlock = firstBlock.getSuccessorAt(0);
@@ -159,8 +185,7 @@ public class ControlFlowAnalysisPhase {
     }
 
     public boolean isConditionalBlock(BasicBlock block) {
-        Expr Expression = ((Stmt.Expression) block.getInstructionAt(0)).expression;
-        return (block.getInstructions().size() == 1 && (((Expr.Binary) Expression).operator.type == OpCode.OP_GREATER || ((Expr.Binary) Expression).operator.type == OpCode.OP_LESS));
+        return (block.getInstructions().size() == 1 && (block.getInstructionAt(0) instanceof Stmt.Expression));
     }
 
     // When classifying the control flow into statements there could be cases where the predecessor or successors list has empty items.
