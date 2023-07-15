@@ -130,7 +130,7 @@ public class ControlFlowAnalysisPhase {
 
                 // For operator precedence
                 if (condition instanceof Expr.Assign ||
-                        (condition instanceof Expr.Logical &&
+                          (condition instanceof Expr.Logical &&
                                 Objects.equals(((Expr.Logical) condition).operator, " or "))) condition = new Expr.Grouping(condition);
 
                 if (secondCondition instanceof Expr.Assign ||
@@ -145,6 +145,37 @@ public class ControlFlowAnalysisPhase {
                 firstBlock.setSuccessors(successors);
                 firstBlock.setEdgeType(falseEdge.getEdgeType());
                 blocks.remove(trueEdge);
+            } else if (trueEdge.getSuccessors().size() == 1 && falseEdge.getSuccessors().size() == 1 &&
+                    !isEmptyBlock(trueEdge) && !isEmptyBlock(falseEdge) &&
+                    falseEdge.getSuccessorAt(0) == trueEdge.getSuccessorAt(0)) {
+
+                int exprCount = firstBlock.getInstructions().size();
+                Expr condition = ((Stmt.Expression) firstBlock.getInstructionAt(exprCount - 1)).expression;
+                List<Stmt> statementsThen = new ArrayList<>();
+                for (Object stmt : trueEdge.getInstructions()) {
+                    Stmt statement = (Stmt) stmt;
+                    statementsThen.add(statement);
+                }
+
+                Stmt ifThenBody = new Stmt.Block(statementsThen);
+                List<Stmt> statementsFalse = new ArrayList<>();
+                for (Object stmt : falseEdge.getInstructions()) {
+                    Stmt statement = (Stmt) stmt;
+                    statementsFalse.add(statement);
+                }
+                Stmt ifElseBody = new Stmt.Block(statementsFalse);
+
+                Stmt.If ifStmt = new Stmt.If(condition, ifThenBody, ifElseBody);
+                firstBlock.setInstructionAt(exprCount - 1, ifStmt);
+
+                BasicBlock grandson = trueEdge.getSuccessorAt(0);
+                List<BasicBlock> successors = new ArrayList<>();
+                successors.add(grandson);
+
+                firstBlock.setSuccessors(successors);
+                firstBlock.setEdgeType(grandson.getEdgeType());
+                blocks.remove(trueEdge);
+                blocks.remove(falseEdge);
             }
         } else if (firstBlock.getSuccessors().size() == 1) {
             BasicBlock nextBlock = firstBlock.getSuccessorAt(0);
