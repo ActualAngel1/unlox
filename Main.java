@@ -66,13 +66,13 @@ public class Main {
     }
 
     private static String args(function function) {
-        if (function.getArgCount() == 0) return "";
-        StringBuilder str = null;
-        for (int i = 0; i < function.getArgCount() - 2; i++) {
+        if (function.getArgCount() == 1) return "";
+        StringBuilder str = new StringBuilder();
+        for (int i = 1; i < function.getArgCount(); i++) {
             str.append(function.getLocals().get(i)).append(", ");
         }
 
-        str.append(function.getLocals().get(function.getArgCount() - 1));
+        str.append(function.getLocals().get(function.getArgCount()));
 
 
         return str.toString();
@@ -85,7 +85,7 @@ public class Main {
             str.append(obj);
         }
 
-        str.append(Objects.equals(func.getName(), "<script>") ? "" : "\n}");
+        str.append(Objects.equals(func.getName(), "<script>") ? "" : "}\n");
 
         System.out.println(str);
 

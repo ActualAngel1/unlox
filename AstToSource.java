@@ -56,7 +56,7 @@ public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
     @Override
     public String visitExpressionStmt(Stmt.Expression stmt) {
         String result = stmt.expression.accept(this);
-        result += result.equals("") ? "" : ";";
+        result += result.equals("") || result.endsWith("\n") ? "" : ";";
         result += "\n";
 
         return result;
