@@ -1,7 +1,11 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
+    Map<String, String> funcToSource;
+
     String transform(Stmt ast) {
         return ast.accept(this);
     }
@@ -16,7 +20,9 @@ public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
         block.setInstructions(new ArrayList<>(strings));
     }
 
-    public void transformAll(List<BasicBlock> blocks) {
+    public void transformAll(List<BasicBlock> blocks, Map<String, String> funcToSource) {
+        this.funcToSource = funcToSource;
+
         for (BasicBlock block : blocks ) {
             transform(block);
         }
@@ -82,6 +88,10 @@ public class AstToSource implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitAssignExpr(Expr.Assign expr) {
+        if (funcToSource.containsKey(expr.value.accept(this)) ||
+                funcToSource.containsKey(expr.name.accept(this))) {
+            return funcToSource.get(expr.name.accept(this));
+        }
         return "var " + expr.name.accept(this) + " = " + expr.value.accept(this);
     }
 

@@ -31,6 +31,8 @@ public class Main {
 
         // Maps a function name to source
         Set<String> names = new HashSet<>();
+        Map<String, String> funcToSource = new HashMap<>();
+
         List<function> functions = lexer.getFunctions();
 
         for (function func : functions) {
@@ -56,10 +58,38 @@ public class Main {
             List<BasicBlock> blocks = flowGraph.getBlocks();
             new ExpressionDecompiler().decompile(blocks);
             List<BasicBlock> afterBlocks = new ControlFlowAnalysisPhase(blocks).getBlocks();
-            new AstToSource().transformAll(afterBlocks);
+            new AstToSource().transformAll(afterBlocks, funcToSource);
 
-            printBlocks(afterBlocks);
+            String src = printFunc(afterBlocks.get(0), func);
+            funcToSource.put(func.getName(), src);
         }
+    }
+
+    private static String args(function function) {
+        if (function.getArgCount() == 0) return "";
+        StringBuilder str = null;
+        for (int i = 0; i < function.getArgCount() - 2; i++) {
+            str.append(function.getLocals().get(i)).append(", ");
+        }
+
+        str.append(function.getLocals().get(function.getArgCount() - 1));
+
+
+        return str.toString();
+    }
+
+    private static String printFunc(BasicBlock block, function func) {
+        StringBuilder str = new StringBuilder(Objects.equals(func.getName(), "<script>") ? "" : "fun " + func.getName() + "(" + args(func) + ")" + " {\n");
+        for (Object obj : block.getInstructions()) {
+            if (!Objects.equals(func.getName(), "<script>")) str.append("\t");
+            str.append(obj);
+        }
+
+        str.append(Objects.equals(func.getName(), "<script>") ? "" : "\n}");
+
+        System.out.println(str);
+
+        return str.toString();
     }
 
     private static void printBlocks(List<BasicBlock> blocks) {
