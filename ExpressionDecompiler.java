@@ -102,7 +102,7 @@ public class ExpressionDecompiler {
 
             if (isConstant(instruction)) {
                 literal(stack, instruction);
-            } else if (isUnary(instruction)){
+            } else if (isUnary(stack, instruction)){
                 unary(stack, instruction);
             } else if (instruction.type == OpCode.OP_SET_GLOBAL || instruction.type == OpCode.OP_SET_LOCAL) {
                 set(stack, instruction);
@@ -188,9 +188,10 @@ public class ExpressionDecompiler {
         stack.push(new Expr.Literal(instruction.literal));
     }
 
-    private boolean isUnary(Instruction instruction) {
+    private boolean isUnary(Stack<Expr> stack, Instruction instruction) {
         return (instruction.type == OpCode.OP_NOT ||
-                instruction.type == OpCode.OP_NEGATE);
+                instruction.type == OpCode.OP_NEGATE ||
+                instruction.type == OpCode.OP_SUBTRACT && stack.size() == 1);
     }
 
     private boolean isConstant(Instruction instruction) {

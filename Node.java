@@ -7,8 +7,6 @@ public class Node {
     private List<Node> dominators = new ArrayList<>();
     private Node immediateDominator;
 
-    // Types?? ?? ? ?? ? ? (Type of edge or pattern? IDFK)
-
     public List<Node> getSuccessors() {
         return this.successors;
     }

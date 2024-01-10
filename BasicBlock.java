@@ -2,20 +2,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BasicBlock {
-    enum EdgeType {
+    enum EdgeType { // To allow more types of edges, in advanced and more optimized algorithms
         False, True
     }
     private EdgeType type;
     private boolean isLoop = false;
-    private static int idStatic = 0;
-    private int id;
     private List<Object> Block;
     private List<BasicBlock> successors;
     private List<BasicBlock> predecessors = new ArrayList<>();
     private Instruction jump;
 
     BasicBlock(List<Object> Block, List<BasicBlock> successors, Instruction jump) {
-        idStatic++;
         this.Block = Block;
         this.successors = successors;
         this.jump = jump;
@@ -23,7 +20,6 @@ public class BasicBlock {
     }
 
     BasicBlock(List<Object> Block, Instruction jump) {
-        idStatic++;
         this.Block = Block;
         this.successors = new ArrayList<>();
         this.jump = jump;
@@ -117,9 +113,6 @@ public class BasicBlock {
         return this.type;
     }
 
-    public int getId() {
-        return id;
-    }
 
     public void setLoop(boolean isLoop) {
         this.isLoop = isLoop;

@@ -59,7 +59,7 @@ public class Simplify {
 
                 case OP_DEFINE_GLOBAL:
                     simplifyOpDefineGlobal(i, instruction, simplified);
-                    i+=2;
+                    // i+=2;
                     break;
 
                 case OP_GET_LOCAL:
@@ -107,6 +107,7 @@ public class Simplify {
         } else {
             globals.set(index, value);
         }
+
         simplified.add(instruction);
     }
 
@@ -118,9 +119,10 @@ public class Simplify {
     }
 
     private void simplifyOpDefineGlobal(int currentIndex, Instruction instruction, List<Instruction> simplified) {
-        String secondOperand = instructions.get(currentIndex + 2).literal;
+        // String secondOperand = instructions.get(currentIndex + 2).literal;
+        String secondOperand = instruction.literal;
         simplified.add(new Instruction(OpCode.OP_LEXME, instruction.offset, secondOperand, instruction.line));
-        int index = Integer.parseInt(instructions.get(currentIndex + 1).literal);
+        int index = Integer.parseInt(instructions.get(currentIndex - 1).literal);
         if (index >= globals.size()) {
             globals.add(secondOperand);
         } else {

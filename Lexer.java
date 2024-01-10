@@ -92,10 +92,15 @@ class Lexer {
     }
 
     private Instruction createInstruction(OpCode code, String lexeme) {
-        // Fix later
+
         Instruction instruction = new Instruction(code, offset, lexeme, 1);
         offset++;
         return instruction;
+    }
+
+    private Instruction createLexeme(OpCode code, String lexeme) {
+
+        return new Instruction(code, offset-2, lexeme, 1);
     }
 
     private Instruction constantInstruction(OpCode code, String lexeme) {
@@ -105,13 +110,12 @@ class Lexer {
     }
 
     private Instruction jumpInstruction(OpCode code, String lexeme) {
-        Instruction instruction = new Instruction(code, code == OpCode.OP_LOOP ? offset - Integer.parseInt(lexeme) : offset, lexeme, currentLines.get(0));
+        Instruction instruction = new Instruction(code, offset, lexeme, currentLines.get(0));
         offset+=3;
         return instruction;
     }
 
     private Instruction createReturnInstruction(OpCode code, String lexeme) {
-        // fix later
         return new Instruction(code, offset, lexeme, 2);
     }
 
@@ -119,7 +123,7 @@ class Lexer {
         String currentInstruction = source[current];
         switch (currentInstruction) {
 
-            case "OP_NIL", "OP_TRUE", "OP_FALSE", "OP_POP", "OP_GET_LOCAL", "OP_SET_LOCAL", "OP_GET_GLOBAL", "OP_DEFINE_GLOBAL", "OP_SET_GLOBAL", "OP_EQUAL", "OP_GREATER", "OP_LESS", "OP_ADD", "OP_SUBTRACT", "OP_MULTIPLY", "OP_DIVIDE", "OP_NOT", "OP_NEGATE", "OP_PRINT" -> {
+            case "OP_NIL", "OP_TRUE", "OP_FALSE", "OP_POP", "OP_GET_LOCAL", "OP_SET_LOCAL",  "OP_EQUAL", "OP_GREATER", "OP_LESS", "OP_ADD", "OP_SUBTRACT", "OP_MULTIPLY", "OP_DIVIDE", "OP_NOT", "OP_NEGATE", "OP_PRINT" -> {
                 OpCode code = OpCode.valueOf(currentInstruction);
                 return createInstruction(code, map.get(code));
             }
@@ -136,12 +140,17 @@ class Lexer {
             }
 
 
-            case "OP_CONSTANT" -> {
+            case "OP_CONSTANT", "OP_DEFINE_GLOBAL" -> {
                 OpCode opCode = OpCode.valueOf(currentInstruction);
                 this.current += 2;
                 return constantInstruction(opCode, source[current]);
             }
 
+            case "OP_GET_GLOBAL", "OP_SET_GLOBAL" -> {
+                OpCode opCode = OpCode.valueOf(currentInstruction);
+
+                return constantInstruction(opCode, map.get(opCode));
+            }
 
             case "OP_JUMP", "OP_JUMP_IF_FALSE", "OP_LOOP" -> {
                 OpCode opcode = OpCode.valueOf(currentInstruction);
@@ -156,7 +165,7 @@ class Lexer {
 
 
             default -> {
-                return createInstruction(OpCode.OP_LEXME, source[current]);
+                return createLexeme(OpCode.OP_LEXME, source[current]);
             }
         }
 
@@ -176,7 +185,7 @@ class Lexer {
                 decompressed.add(line);
             }
         }
-        // TODO: THIS LINE IS A JOKE
+        // TODO: I dont really like this line
         decompressed.add(decompressed.get(decompressed.size()-1));
 
         this.currentLines = decompressed;
